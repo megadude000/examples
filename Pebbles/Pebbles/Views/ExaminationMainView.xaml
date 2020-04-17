@@ -1,0 +1,487 @@
+﻿<UserControl x:Class="Company.Pebbles.Views.ExaminationMainView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:cal="http://www.caliburnproject.org"
+             xmlns:gif="http://wpfanimatedgif.codeplex.com"
+             xmlns:localization="clr-namespace:Company.Pebbles.Properties"
+             xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+             Background="White">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <xctk:InverseBoolConverter x:Key="boolConverter" />
+            
+            <Image Source="/Resources/hangup.ico" x:Key="Hangup" />
+            <Image Source="/Resources/call.ico" x:Key="ReadyToCall" />
+            <Image Source="/Resources/play.ico" x:Key="Play" />
+            <Image Source="/Resources/pull.ico" x:Key="Pull" />
+            <Image Source="/Resources/stop.ico" x:Key="Stop" />
+            <Image Source="/Resources/pause.ico" x:Key="Pause" />
+            <Image Source="/Resources/refresh.ico" x:Key="Refresh" />
+            <Image Source="/Resources/maxvolume.ico" x:Key="MaxVolume"/>
+            <Image Source="/Resources/mutevolume.ico" x:Key="MuteVolume"/>
+            <Image Source="/Resources/columns.ico" x:Key="Columns" x:Shared="False"/>
+            <Image Source="/Resources/speech.ico" x:Key="Speech"/>
+            <Image Source="/Resources/clear.ico" x:Key="ClearSearch" x:Shared="False"/>
+
+            <Style TargetType="TextBlock" x:Key="PropertyName">
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="Padding" Value="0,5,5,5" />
+            </Style>
+            <Style TargetType="Button" x:Key="ControlButton">
+                <Setter Property="Margin" Value="1,1,1,1"/>
+                <Setter Property="Padding" Value="4"/>
+            </Style>
+            <Style TargetType="Button" x:Key="SmallButton">
+                <Setter Property="Margin" Value="1,1,1,1"/>
+            </Style>
+            <Style TargetType="Grid" x:Key="ControlBoard">
+                <Setter Property="MaxWidth" Value="510"/>
+                <Setter Property="MinWidth" Value="510"/>
+            </Style>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <xctk:BusyIndicator IsBusy="{Binding IsLoading, Mode=OneWay}" 
+                        BusyContent="{x:Static localization:Resources.LoadingExaminationsLabel}">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="20"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Menu Grid.Row="0">
+                <MenuItem IsEnabled="false" Header="{x:Static localization:Resources.MenuConfigurationHeader}"/>
+                <MenuItem IsEnabled="false" Header="{x:Static localization:Resources.PullLabel}"/>
+                <MenuItem IsEnabled="false" Header="{x:Static localization:Resources.ActionsMenuItem}"/>
+                <MenuItem IsEnabled="false" Header="{x:Static localization:Resources.AudioMessagesLabel}"/>
+                <MenuItem IsEnabled="false" Header="{x:Static localization:Resources.AgentsMenuItem}"/>
+                <MenuItem IsEnabled="false" Header="{x:Static localization:Resources.About}"/>
+                <MenuItem IsEnabled="{Binding IsExaminationRunning, Converter={StaticResource boolConverter}}" Header="{x:Static localization:Resources.Logout}"  cal:Message.Attach="LogoutAgent()"/>
+            </Menu>
+            <Grid Grid.Row="1" Margin="0,2,2,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition MaxWidth="290"/>
+                </Grid.ColumnDefinitions>
+                <Grid Margin="2,2,2,2" Name="ParentGrid">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="60"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="80"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Margin="2,0,2,4" Style="{StaticResource ControlBoard}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="AgentPause" cal:Message.Attach="SwitchExaminationPause()" Grid.Column="0">
+                                <Button.Style>
+                                    <Style TargetType="{x:Type Button}" BasedOn="{StaticResource ControlButton}">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsExaminationRunning, Converter={StaticResource boolConverter}}" Value="True">
+                                                <Setter Property="Content" Value="{x:Static localization:Resources.ExamIsOn}"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding IsExaminationRunning, Converter={StaticResource boolConverter}}" Value="False">
+                                                <Setter Property="Content" Value="{x:Static localization:Resources.ExamIsOff}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button
+                                IsEnabled="false"
+                                x:Name="EndCallButton" 
+                                Content="{StaticResource Hangup}" 
+                                Grid.Column="1" 
+                                Style="{StaticResource ControlButton}"/>
+                            <Button 
+                                IsEnabled="{Binding IsButtonNextActive}"
+                                x:Name="AudioFilePlayerButton"
+                                cal:Message.Attach="NextTestCase()"
+                                Content="{StaticResource Play}"
+                                Grid.Column="2"
+                                Style="{StaticResource ControlButton}"/>
+                            <Button 
+                                IsEnabled="false"
+                                x:Name="AudioFileNextButton"
+                                Content="{StaticResource Pause}"
+                                Grid.Column="3"
+                                Style="{StaticResource ControlButton}"/>
+                            <Button 
+                                IsEnabled="false"
+                                cal:Message.Attach="StopExamination(false)"
+                                x:Name="AudioFileStopButton"
+                                Content="{StaticResource Stop}"
+                                Grid.Column="4"
+                                Style="{StaticResource ControlButton}"/>
+                            <ComboBox Grid.Column="5" Grid.ColumnSpan="2" VerticalContentAlignment="Center" DisplayMemberPath="Name" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" Margin="1,1,1,1" IsEnabled="false"/>
+                            <Image Grid.Column="7" Grid.ColumnSpan="2" gif:ImageBehavior.AnimatedSource="/Resources/phone.gif" Width="60" Visibility="{Binding ExaminationVisibility}"/>
+                        </Grid>
+                    </Grid>
+                    <ProgressBar Maximum="100" Value="{Binding CurrentProgress}" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Margin="2,0,3,4"/>
+                    <Grid Grid.Row="1" Margin="2,0,3,4">
+
+                    </Grid>
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition 
+                        Width="{Binding ElementName=ParentGrid, Path=ActualWidth}"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox 
+                    x:Name ="ProgressViewModel_CurrentProggressLabel"
+                    IsEnabled="false"
+                    IsReadOnly="true"
+                    VerticalContentAlignment="Center"
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Stretch" 
+                    TextAlignment="Center">
+                            <TextBox.Style>
+                                <Style TargetType="{x:Type TextBox}">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CurrentAnswerStatus, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="1">
+                                            <Setter Property="Background" Value="DarkSeaGreen"/>
+                                            <Setter Property="FontWeight" Value="Bold"></Setter>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding CurrentAnswerStatus, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="2">
+                                            <Setter Property="Background" Value="IndianRed"/>
+                                            <Setter Property="FontWeight" Value="Bold"></Setter>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding CurrentAnswerStatus, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="3">
+                                            <Setter Property="Background" Value="IndianRed"/>
+                                            <Setter Property="FontWeight" Value="Bold"></Setter>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                    </Grid>
+                    <Grid Grid.Row="3" Grid.Column="0" Margin="2,0,2,4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="30"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="30"/>
+                        </Grid.ColumnDefinitions>
+                        <Button 
+                    IsEnabled="false"
+                    Grid.Column="0" 
+                    Content="{StaticResource MuteVolume}" 
+                    x:Name="MuteVolumeButton"
+                    Style="{StaticResource SmallButton}"/>
+                        <Button 
+                    IsEnabled="false"
+                    Grid.Column="2" 
+                    Content="{StaticResource MaxVolume}" 
+                    x:Name="SetMaxVolumeButton" 
+                    Style="{StaticResource SmallButton}"/>
+                        <Slider Grid.Column="1" Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="2,0,2,0" Minimum="0"
+                            Maximum="100" TickFrequency="5" AutoToolTipPlacement="TopLeft" ToolTip="{x:Static localization:Resources.VolumeOfAudiomessage}" IsSnapToTickEnabled="True" Value="{Binding VolumeValue, Mode=TwoWay}"/>
+                    </Grid>
+                    <Grid Grid.Row="4" Margin="2,0,2,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition MinWidth="30"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition MinWidth="30"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition MinWidth="30"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid Grid.Row="0" Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="30"/>
+                                    <ColumnDefinition/>
+                                </Grid.ColumnDefinitions>
+                                <Button
+                            cal:Message.Attach="SetDivisionOfColumnsScripts()"
+                            Content="{StaticResource Columns}" 
+                            Grid.Column="0" 
+                            Grid.Row="0" 
+                            Style="{StaticResource SmallButton}"/>
+                                <TextBlock 
+                            Text="{x:Static localization:Resources.ScriptsLabel}"
+                            Style="{StaticResource PropertyName}" 
+                            HorizontalAlignment="Stretch" 
+                            TextAlignment="Center"
+                            Grid.Column="1" 
+                            Grid.Row="0"/>
+                            </Grid>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="30"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBox 
+                            x:Name="SearchScriptsString" 
+                            FontSize="14" 
+                            MaxLength="15" 
+                            TextAlignment="Center" 
+                            HorizontalAlignment="Stretch"
+                            Text="{Binding SearchScriptsString, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                            Grid.Row="0"
+                            Grid.Column="0" 
+                            Margin="1,1,1,2"/>
+                                <Button 
+                            cal:Message.Attach="ClearScriptsSearch()"
+                            Content="{StaticResource ClearSearch}" 
+                            HorizontalAlignment="Stretch" 
+                            Grid.Row="0" 
+                            Grid.Column="1" 
+                            Style="{StaticResource SmallButton}"/>
+                                <ListBox x:Name="ExaminationScripts" 
+                                 DisplayMemberPath ="Value"
+                                 HorizontalAlignment="Stretch"
+                                 Grid.Row="1"
+                                 VerticalAlignment="Stretch"
+                                 Grid.Column="0" 
+                                 Grid.ColumnSpan="2" 
+                                 Focusable="True" 
+                                 Margin="1,1,0,0">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="{Binding ColumnAmountScripts}" VerticalAlignment="Top"/>
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="cal:Message.Attach" Value="[Event MouseDoubleClick] = [Action AnswerDoubleClick($dataContext)]"/>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                            </Grid>
+                        </Grid>
+                        <GridSplitter 
+                    Grid.Column="1" 
+                    Width="5" 
+                    ShowsPreview="True" 
+                    VerticalAlignment="Stretch" 
+                    HorizontalAlignment="Center"/>
+                        <Grid Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid 
+                        Grid.Row="0" 
+                        Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock 
+                            Text="{x:Static localization:Resources.AllObjectionsLabel}" 
+                            Style="{StaticResource PropertyName}" 
+                            HorizontalAlignment="Stretch" 
+                            TextAlignment="Center" 
+                            Grid.Column="0"/>
+                                <Button 
+                            cal:Message.Attach="SetDivisionOfColumnsObjections()"
+                            Content="{StaticResource Columns}"
+                            Grid.Column="1" 
+                            Style="{StaticResource SmallButton}"/>
+                            </Grid>
+                            <Grid Grid.Row="1">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="30"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBox 
+                            x:Name="SearchObjectionsString"
+                            FontSize="14" 
+                            MaxLength="15" 
+                            TextAlignment="Center"
+                            HorizontalAlignment="Stretch" 
+                            Text="{Binding SearchObjectionsString, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" 
+                            Grid.Row="0"
+                            Grid.Column="0"
+                            VerticalAlignment="Stretch" 
+                            Margin="1,1,1,2"/>
+                                <Button 
+                            cal:Message.Attach="ClearObjectionsSearch()"
+                            Content="{StaticResource ClearSearch}"
+                            HorizontalAlignment="Stretch"
+                            Grid.Row="0" Grid.Column="1"
+                            VerticalAlignment="Stretch" 
+                            Style="{StaticResource SmallButton}"/>
+                                <ListBox x:Name="ExaminationObjections" 
+                                 DisplayMemberPath ="Value"
+                                 HorizontalAlignment="Stretch"
+                                 Grid.Row="1"
+                                 VerticalAlignment="Stretch"
+                                 Grid.Column="0" 
+                                 Grid.ColumnSpan="2" 
+                                 Focusable="True" 
+                                 Margin="1,1,0,0">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="{Binding ColumnAmountObjections}" VerticalAlignment="Top"/>
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="cal:Message.Attach" Value="[Event MouseDoubleClick] = [Action AnswerDoubleClick($dataContext)]"/>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                            </Grid>
+                        </Grid>
+                        <GridSplitter 
+                    Width="5"
+                    ShowsPreview="True" 
+                    Grid.Column="3" 
+                    VerticalAlignment="Stretch" 
+                    HorizontalAlignment="Center"/>
+                        <Grid Grid.Column="4">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="30"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Grid 
+                        Grid.Row="0" 
+                        Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock 
+                            Text="{x:Static localization:Resources.QuickAnswersLabel}" 
+                            Style="{StaticResource PropertyName}" 
+                            HorizontalAlignment="Stretch" 
+                            TextAlignment="Center" 
+                            Grid.Column="0"/>
+                                <Button 
+                            cal:Message.Attach="SetDivisionOfColumnsQuickAnswers()"
+                            Content="{StaticResource Columns}" 
+                            Grid.Column="1" 
+                            Style="{StaticResource SmallButton}"/>
+                            </Grid>
+                            <Grid 
+                        Grid.Row="1" 
+                        VerticalAlignment="Stretch">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="30"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <TextBox 
+                            x:Name="SearchQuickAnswersString" 
+                            FontSize="14" 
+                            MaxLength="15"
+                            TextAlignment="Center"
+                            HorizontalAlignment="Stretch"
+                            Text="{Binding SearchQuickAnswersString, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                            Grid.Row="0"
+                            Grid.Column="0" 
+                            VerticalAlignment="Stretch" 
+                            Margin="1,1,1,2"/>
+                                <Button 
+                            cal:Message.Attach="ClearQuickAnswersSearch()"
+                            Content="{StaticResource ClearSearch}" 
+                            HorizontalAlignment="Right"
+                            Grid.Row="0"
+                            Grid.Column="1"
+                            VerticalAlignment="Stretch" 
+                            Style="{StaticResource SmallButton}"/>
+                                <ListBox x:Name="ExaminationQuickAnswers" 
+                                 DisplayMemberPath ="Value"
+                                 HorizontalAlignment="Stretch"
+                                 Grid.Row="1"
+                                 VerticalAlignment="Stretch"
+                                 Grid.Column="0" 
+                                 Grid.ColumnSpan="2" 
+                                 Focusable="True" 
+                                 Margin="1,1,0,0">
+                                    <ListBox.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="{Binding ColumnAmountQuickAnswers}" VerticalAlignment="Top"/>
+                                        </ItemsPanelTemplate>
+                                    </ListBox.ItemsPanel>
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem">
+                                            <Setter Property="cal:Message.Attach" Value="[Event MouseDoubleClick] = [Action AnswerDoubleClick($dataContext)]"/>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                            </Grid>
+                        </Grid>
+                    </Grid>
+                </Grid>
+                <Grid Grid.Column="1">
+                    <DockPanel Margin="0,0,5,5" HorizontalAlignment="Stretch" LastChildFill="True" >
+                        <Grid DockPanel.Dock="Top" Height="100">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="25" />
+                                <RowDefinition Height="1*" />
+                            </Grid.RowDefinitions>
+                            <Label Content="{x:Static localization:Resources.AudioFilesHistory}" Grid.Column="0" Grid.Row="0"/>
+                            <ListBox x:Name="AudioFilesHistory" Grid.Column="0" Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Auto" DisplayMemberPath="AudioFileName">
+                                <ListBox.ItemContainerStyle>
+                                    <Style TargetType="ListBoxItem">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Path = AudioFileType, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="1">
+                                                <Setter Property="Background" Value="DarkSeaGreen"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Path = AudioFileType, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="0">
+                                                <Setter Property="Background" Value="IndianRed"/>
+                                                <Setter Property="FontWeight" Value="Bold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </ListBox.ItemContainerStyle>
+                            </ListBox>
+                        </Grid>
+                        <Grid DockPanel.Dock="Top" Margin="0,5,0,0">
+                            <TabControl x:Name="ContextForms" MinWidth="280" >
+                                <TabControl.ItemTemplate >
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </TabControl.ItemTemplate>
+                                <TabControl.ItemContainerStyle>
+                                    <Style TargetType="TabItem">
+                                        <Setter Property="FontWeight" Value="Normal"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsPossibleToClose, UpdateSourceTrigger=PropertyChanged, Mode=TwoWay}" Value="False">
+                                                <Setter Property="FontWeight" Value="ExtraBold"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TabControl.ItemContainerStyle>
+                            </TabControl>
+                        </Grid>
+                    </DockPanel>
+                </Grid>
+            </Grid>
+        </Grid>
+    </xctk:BusyIndicator>
+
+</UserControl>
