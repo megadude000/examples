@@ -1,0 +1,85 @@
+﻿<div class="panel panel-primary conversation-transcription" cg-busy="[fetchAudioPromise, releaseAudioPromise, saveAudioTrancriptionPromise, saveAudioVerificationPromise]">
+    <div class="panel-heading">
+        <h3 class="panel-title" style="text-align:center">
+            {{ 'TRANSCRIPTION_TOOL' | translate }}
+        </h3>
+    </div>
+    <div class="panel-body">
+        <div class="text-center" ng-show="!workInProgress">
+            <div class="row">
+                <div class="col-lg-6">
+                    <button type="button" class="btn btn-success btn-s" ng-click="startTranscription()">
+                        <span class="glyphicon glyphicon-edit"></span> {{ 'START_TRANSCRIPTION_LABEL' | translate }}
+                    </button>
+                </div>
+                <div class="col-lg-6">
+                    <button type="button" class="btn btn-info btn-s" ng-click="startVerification()">
+                        <span class="glyphicon glyphicon-check"></span> {{ 'START_VERIFICATION_LABEL' | translate }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="text-center" ng-show="transcriptionModel.loadingFile">
+            <span style="font-size:20px" class="fa fa-spinner fa-spin"></span>
+        </div>
+        <div ng-show="transcriptionModel.audioShow">
+            <div class="panel panel-success panel-body">
+                <div class="align-middle" style="float: left;">
+                    <select class="form-control" ng-model="selectedPlaybackRate" ng-change="setPlayBackRate()">
+                        <option ng-repeat="rate in playbackRateSelector" value="{{rate.type}}">{{rate.name| translate}}</option>
+                    </select>
+                </div>
+                <div class="align-middle" style="float: left;">
+                    <a ng-click="playPauseAudioFile()">
+                        <span style="font-size:30px" ng-class="!transcriptionModel.playing ? 'glyphicon glyphicon-play-circle' : 'glyphicon glyphicon-pause';"></span>
+                    </a>
+                </div>
+                <div class="align-middle" style="overflow: auto;">
+                    <div id="waveAudioPlayer"></div>
+                </div>
+            </div>
+            <div class="row" style="margin-top:1em">
+                <div class="" ng-class="assignedLabels.length != 0 ? 'col-lg-10 col-md-9' : 'col-lg-12';">
+                    <div class="panel panel-success panel-body">
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <label class="control-label">{{ 'TRANSCRIPTION_AGENT_LABEL' | translate }}<span ng-if="authorFullName">: </span>{{authorFullName}}</label>
+                                <p><textarea class="transcription-area" id="agentTranscriptionTextarea" rows="4" ng-model="transcriptionModel.agentTranscription"></textarea></p>
+                            </div>
+                        </div>
+                        <div class="row text-center">
+                            <button type="button" class="btn btn-success btn-s" ng-click="copyDeepSpeechToAgentTranscription()">
+                                <span class="glyphicon glyphicon-menu-up"></span>
+                            </button>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                <label class="control-label">{{ 'DEEPSPEECH_TANSCRIPTION_LABEL' | translate }}</label>
+                                <p><textarea class="transcription-area" rows="4" ng-model="transcriptionModel.deepSpeechTranscription" ng-disabled="true"></textarea></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-3" ng-if="assignedLabels.length != 0">
+                    <div class="panel panel-success panel-body">
+                        <div ng-repeat="group in assignedLabels">
+                            <labels bind="group" selected="selectedLabelIds" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="col-lg-1 col-md-2 col-sm-3">
+                    <button type="button" class="btn btn-danger btn-s float-left" ng-click="cancelTranscription()">
+                        <span class="glyphicon glyphicon-erase"></span> {{ 'CANCEL_BUTTON_LABEL' | translate }}
+                    </button>
+                </div>
+                <div class="col-lg-offset-11 col-md-offset-10 col-sm-offset-9">
+                    <button type="button" class="btn btn-success btn-s float-right" ng-click="nextAudio()">
+                        <span class="glyphicon glyphicon-save"></span> {{ 'SAVE_BUTTON' | translate }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

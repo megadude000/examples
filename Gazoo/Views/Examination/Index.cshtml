@@ -1,0 +1,124 @@
+﻿@using Company.Common.AspNet.Localization
+
+@inject ILocalizationService Localization
+
+@{
+    ViewBag.Title = @Localization.Localizer.ExaminationMenuItem;
+}
+
+@section Styles {
+    <environment names="Development">
+        <link rel="stylesheet" href="~/css/spacing.css" />
+        <link rel="stylesheet" href="~/css/examinations.css" />
+        <link rel="stylesheet" href="~/css/dividedButton.css" />
+        <link rel="stylesheet" href="~/lib/bootstrap-fileinput/css/fileinput.css" />
+        <link rel="stylesheet" href="~/lib/jasny-bootstrap/css/jasny-bootstrap.css" />
+        <link rel="stylesheet" href="~/lib/angular-material/angular-material.css" />
+        <link rel="stylesheet" href="~/lib/semantic-ui-step/step.css" />
+        <link rel="stylesheet" href="~/lib/semantic-ui-divider/divider.css" />
+        <link rel="stylesheet" href="~/lib/angular-ui-select/select.css" />
+    </environment>
+
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="~/css/spacing.css" />
+        <link rel="stylesheet" href="~/css/examinations.css" />
+        <link rel="stylesheet" href="~/css/dividedButton.css" />
+        <link rel="stylesheet" href="~/lib/bootstrap-fileinput/css/fileinput.min.css" />
+        <link rel="stylesheet" href="~/lib/jasny-bootstrap/css/jasny-bootstrap.min.css" />
+        <link rel="stylesheet" href="~/lib/angular-material/angular-material.min.css" />
+        <link rel="stylesheet" href="~/lib/semantic-ui-divider/divider.min.css" />
+        <link rel="stylesheet" href="~/lib/semantic-ui-step/step.css" />
+        <link rel="stylesheet" href="~/lib/angular-ui-select/select.min.css" />
+    </environment>
+}
+
+@section Scripts {
+    <environment names="Development">
+        <script src="~/lib/recordrtc/RecordRTC.js"></script>
+        <script src="~/lib/wavesurfer.js/wavesurfer.js"></script>
+        <script src="~/lib/angular-timer/angular-timer.js"></script>
+        <script src="~/lib/humanize-duration/humanize-duration.js"></script>
+        <script src="~/lib/bootstrap-fileinput/js/fileinput.min.js"></script>
+        <script src="~/lib/jasny-bootstrap/js/jasny-bootstrap.js"></script>
+        <script src="~/js/shared/common/Company.gazoo.promise.common.js"></script>
+        <script src="~/js/shared/common/Company.gazoo.fileinput.locale.js"></script>
+        <script src="~/lib/angular-audio-recorder/dist/angular-audio-recorder.js"></script>
+        <script src="~/lib/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"></script>
+        <script src="~/lib/angular-file-upload/angular-file-upload.js"></script>
+        <script src="~/lib/angular-messages/angular-messages.js"></script>
+        <script src="~/lib/angular-aria/angular-aria.js"></script>
+        <script src="~/lib/angular-material/angular-material.js"></script>
+        <script src="~/lib/angular-ui-select/select.js"></script>
+
+        <script src="~/js/examination/controllers/Company.gazoo.examination.module.controller.js"></script>
+        <script src="~/js/examination/controllers/Company.gazoo.examination.audio.files.controller.js"></script>
+        <script src="~/js/examination/controllers/Company.gazoo.examination.modal.controller.js"></script>
+        <script src="~/js/examination/controllers/Company.gazoo.examination.audio.file.modal.controller.js"></script>
+        <script src="~/js/examination/controllers/Company.gazoo.examination.answer.set.modal.controller.js"></script>
+
+        <script src="~/js/examination/components/Company.gazoo.examination.audio.files.list.component.js"></script>
+        <script src="~/js/examination/components/Company.gazoo.examination.audio.recording.component.js"></script>
+        <script src="~/js/examination/components/Company.gazoo.examination.audio.uploader.component.js"></script>
+        <script src="~/js/examination/components/Company.gazoo.examination.details.components.js"></script>
+        <script src="~/js/examination/components/Company.gazoo.examination.list.component.js"></script>
+        <script src="~/js/examination/components/Company.gazoo.examination.asnwer.sets.component.js"></script>
+        <script src="~/js/examination/components/Company.gazoo.examination.report.details.component.js"></script>
+        <script src="~/js/examination/components/Company.gazoo.examination.reports.component.js"></script>
+        <script src="~/js/examination/components/Company.gazoo.examination.statistics.component.js"></script>
+
+        <script src="~/js/examination/directives/Company.gazoo.examination.answer.control.directive.js"></script>
+
+        <script src="~/js/examination/services/Company.gazoo.examination.audio.share.data.servise.js"></script>
+        <script src="~/js/examination/services/http-services/Company.gazoo.examination.http.service.js"></script>
+    </environment>
+
+    <environment names="Staging,Production">
+        <script src="~/lib/recordrtc/RecordRTC.min.js"></script>
+        <script src="~/lib/wavesurfer.js/wavesurfer.min.js"></script>
+        <script src="~/lib/angular-timer/angular-timer.min.js"></script>
+        <script src="~/lib/bootstrap-fileinput/js/fileinput.min.js"></script>
+        <script src="~/lib/jasny-bootstrap/js/jasny-bootstrap.min.js"></script>
+        <script src="~/lib/angular-audio-recorder/dist/angular-audio-recorder.min.js"></script>
+        <script src="~/lib/humanize-duration/humanize-duration.min.js"></script>
+        <script src="~/lib/angular-drag-and-drop-lists/angular-drag-and-drop-lists.min.js"></script>
+        <script src="~/lib/angular-file-upload/angular-file-upload.min.js"></script>
+        <script src="~/lib/angular-aria/angular-aria.min.js"></script>
+        <script src="~/lib/angular-messages/angular-messages.min.js"></script>
+        <script src="~/lib/angular-material/angular-material.min.js"></script>
+        <script src="~/lib/angular-ui-select/select.min.js"></script>
+    </environment>
+}
+<div class="examinations" ng-app="Company.gazoo.examination" ng-cloak>
+    <div ng-controller="examinationModuleController">
+        <toaster-container></toaster-container>
+        <div ng-if="showNavigationBar()">
+            <div class="col-md-2 col-sm-3 col-xs-12">
+                <ul class="nav nav-pills nav-stacked">
+                    <li ng-class="{'active':$state.current.name.indexOf('examinations') != -1}" required-claim="ExamMaster">
+                        <a ui-sref="examinations">{{ 'EXAMINATIONS_COMPONENT_TAB' | translate}}</a>
+                    </li>
+                    <li ng-class="{'active':$state.current.name.indexOf('audioFilesComponent') != -1}" required-claim="ExamMaster">
+                        <a ui-sref="audioFilesComponent.audioFileList">{{ 'AUDIO_FILES_COMPONENT_TAB' | translate}}</a>
+                    </li>
+                    <li ng-class="{'active':$state.current.name.indexOf('answerSetsComponent') != -1}" required-claim="ExamMaster">
+                        <a ui-sref="answerSetsComponent">{{ 'ANSWERS_COMPONENT_TAB' | translate}}</a>
+                    </li>
+                    <li ng-class="{'active':$state.current.name.indexOf('reports') != -1}">
+                        <a ui-sref="reports">{{ 'REPORTS_COMPONENT_TAB' | translate}}</a>
+                    </li>
+                    <li ng-class="{'active':$state.current.name === 'statistics'}">
+                        <a ui-sref="statistics">{{ 'STATISTICS_COMPONENT_TAB' | translate}}</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-10 col-sm-9 col-xs-12 tab-content">
+                <ui-view></ui-view>
+            </div>
+        </div>
+        <div ng-if="!showNavigationBar()">
+            <div class="col-xs-12 tab-content">
+                <ui-view></ui-view>
+            </div>
+        </div>
+    </div>
+</div>

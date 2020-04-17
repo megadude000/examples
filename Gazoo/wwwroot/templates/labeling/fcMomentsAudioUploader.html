@@ -1,0 +1,52 @@
+﻿<div class="panel panel-danger  conversation-transcription" data-ng-init="initialize()">
+    <div class="panel-heading">
+        <h3 class="panel-title" style="text-align:center">
+            {{ 'FC_MOMENTS_UPLOAD_TAB' | translate }}
+        </h3>
+    </div>
+    <div class="panel-body" ng-disabled="uploadingProgress != 0">
+        <div class="col-md-3 text-center">
+            <label>&nbsp;</label>
+            <input id="fullConversationMomentsFileInput"
+                   type="file"
+                   ng-disabled="uploadingProgress != 0"
+                   webkitDirectory>
+        </div>
+        <div class="col-md-4 text-center">
+            <form name="commentForm">
+                <label class="control-label">{{ 'COMMENT_LABEL' | translate }}</label>
+                <input type="text"
+                       name="commentInput"
+                       class="form-control"
+                       ng-disabled="uploadingProgress != 0"
+                       ng-maxlength="128"
+                       ng-model="comment"
+                       placeholder="{{ 'COMMENT_PLACEHOLDER' | translate }}" />
+            </form>
+            <div>
+                <span class="alert alert-danger" ng-show="commentForm.commentInput.$error.maxlength">
+                    {{ 'MAX_LENGTH_FIELD' | translate }}
+                </span>
+            </div>
+        </div>
+        <div class="col-md-3 text-center">
+            <label class="full-width text-center">{{ 'SELECT_PRIORITY_LEVEL' | translate }}</label>
+            <select class="form-control full-width"
+                    ng-disabled="uploadingProgress != 0"
+                    ng-model="priority"
+                    ng-options="priorityLevel for priorityLevel in priorityLevels">
+            </select>
+        </div>
+        <div class="col-md-2 text-center">
+            <label style="display:block">&nbsp;</label>
+            <button type="button" class="btn btn-danger btn-s" ng-click="uploadAll()" ng-disabled="uploadingProgress != 0 || !fcAudios.length">
+                <span class="glyphicon glyphicon-upload"></span> {{'UPLOAD_LABEL' | translate }}
+            </button>
+        </div>
+    </div>
+    <div ng-show="uploadingProgress != 0" style="margin:10px">
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" ng-style="{ 'width': uploadingProgress + '%' }"></div>
+        </div>
+    </div>
+</div>

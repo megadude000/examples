@@ -1,0 +1,137 @@
+﻿<div class="examination-list" ng-init="initialize()" cg-busy="[fetchExaminationsPromise, deleteExaminationPromise, addExaminationPromise]">
+    <div id="filter-panel" class="filter-panel text-center col-lg-12 col-md-12 col-sm-12">
+        <div class="panel panel-default col-lg-10 col-md-12 col-sm-12">
+            <div class="panel-body">
+                <form role="form">
+                    <div class="form-group col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                        <label class="filter-col" style="margin-right:0;" for="pref-orderby">{{'EXAMINATION_TITLE' | translate}}:</label>
+                        <input type="text"
+                               class="form-control"
+                               ng-change="filterExaminations()"
+                               ng-model-options="{debounce:100}"
+                               ng-model="filterModel.examinationTitle" />
+                    </div>
+                    <div class="form-group col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                        <label class="filter-col" style="margin-right:0;" for="pref-search">{{'FROM_DATE_LABEL' | translate}}:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control"
+                                   uib-datepicker-popup="dd-MM-yyyy"
+                                   is-open="startDatePopup.opened"
+                                   ng-model="filterModel.startDate"
+                                   readonly
+                                   datepicker-options="startDateOptions"
+                                   ng-change="changeMinEndTime(); filterExaminations()" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default calendar-button" ng-click="openStartDatePopup()"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                        <label class="filter-col" style="margin-right:0;" for="pref-search">{{'TO_DATE_LABEL' | translate}}:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control"
+                                   uib-datepicker-popup="dd-MM-yyyy"
+                                   is-open="endDatePopup.opened"
+                                   ng-model="filterModel.endDate"
+                                   readonly
+                                   datepicker-options="endDateOptions"
+                                   ng-change="changeMaxStartTime(); filterExaminations()" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default calendar-button" ng-click="openEndDatePopup()"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-3 col-md-3 col-sm-12 col-xs-12">
+                        <label class="filter-col" style="margin-right:0;" for="pref-search">&nbsp;</label>
+                        <div class="input-group" style="width:100%;">
+                            <button type="reset" class="btn btn-default" id="reloadExamiations" style="width:100%" ng-click="resetFilter()">
+                                <span class="glyphicon glyphicon-record"></span> {{'RESET_BUTTON' | translate}}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="panel panel-default col-lg-2 col-md-12 col-sm-12" style="padding:1em !important">
+            <div style="width:100%;">
+                <button class="btn btn-success" style="width:100%; height:5.5em" ng-click="addExamination()">
+                    {{'ADD_EXAMINATION' | translate}}
+                </button>
+            </div>
+        </div>
+    </div>
+    <div ng-if="pagination.totalItems == 0">
+        <div class="panel-body text-center">
+            <label>{{ 'NO_EXAMINATIONS_LABEL' | translate }}</label>
+        </div>
+    </div>
+    <div ng-if="pagination.totalItems!==0">
+        <div class=" col-lg-12 col-md-12 col-sm-12">
+            <div class="text-center">
+                <ul uib-pagination ng-show="pagination.totalItems > 10"
+                    total-items="pagination.totalItems"
+                    items-per-page="pagination.itemsPerPage"
+                    ng-model="pagination.currentPage"
+                    ng-click="setPage()"
+                    max-size="pagination.maxVisiblePages"
+                    boundary-links="true"
+                    first-text="&laquo;"
+                    last-text="&raquo;"
+                    next-text="&rsaquo;"
+                    previous-text="&lsaquo;"></ul>
+            </div>
+            <table class="table table-sm table-striped">
+                <thead>
+                    <tr>
+                        <th class="text-center cursor-pointer" ng-click="sortBy('name')">
+                            {{'EXAMINATION_TITLE' | translate}}
+                            <span class="sortorder" ng-show="propertyName === 'name'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer" ng-click="sortBy('creationTime')">
+                            {{'EXAMINATION_DATE_OF_CREATION' | translate}}<span class="sortorder" ng-show="propertyName === 'creationTime'" ng-class="{reverse: reverse}">
+                            </span>
+                        </th>
+                        <th class="text-center cursor-pointer" ng-click="sortBy('modificationTime')">
+                            {{'EXAMINATION_DATE_OF_MODIFICATION' | translate}}<span class="sortorder" ng-show="propertyName === 'modificationTime'" ng-class="{reverse: reverse}">
+                            </span>
+                        </th>
+                        <th class="text-center cursor-pointer" ng-click="sortBy('authorName')">
+                            {{'AUTHOR_LABEL' | translate}}<span class="sortorder" ng-show="propertyName === 'authorName'" ng-class="{reverse: reverse}">
+                            </span>
+                        </th>
+                        <th class="text-center""></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="exam in paginatedExaminations">
+                        <th class="text-center">{{exam.name}}</th>
+                        <th class="text-center">{{exam.creationTime}}</th>
+                        <th class="text-center">{{exam.modificationTime}}</th>
+                        <th class="text-center">{{exam.authorName}}</th>
+                        <th class="float-right">
+                            <button class="btn btn-primary" ng-click="goToEditTab(exam.id); $event.stopPropagation();">
+                                <span class="glyphicon glyphicon-edit" />
+                            </button>
+                            <button class="btn btn-danger" ng-click="confirmDelete(exam); $event.stopPropagation();">
+                                <span class="glyphicon glyphicon-trash" />
+                            </button>
+                        </th>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="text-center">
+                <ul uib-pagination ng-show="pagination.totalItems > 10"
+                    total-items="pagination.totalItems"
+                    items-per-page="pagination.itemsPerPage"
+                    ng-model="pagination.currentPage"
+                    ng-click="setPage()"
+                    max-size="pagination.maxVisiblePages"
+                    boundary-links="true"
+                    first-text="&laquo;"
+                    last-text="&raquo;"
+                    next-text="&rsaquo;"
+                    previous-text="&lsaquo;"></ul>
+            </div>
+        </div>
+    </div>
+</div>

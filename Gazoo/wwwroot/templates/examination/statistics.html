@@ -1,0 +1,272 @@
+<div class="examination-report" ng-init="initialize()" cg-busy="[fetchLatestStatistics, fetchAgentsForStatisticsPromise, fetchExaminationsForStatisticsPromise, getExaminationStatistics,fetchInstancesForStatisticsPromise]">
+    <div class="panel panel-danger">
+        <div class="panel-heading">
+            <h3 class="panel-title" style="text-align:center">
+                {{ 'STATISTICS_COMPONENT_TAB' | translate }}
+            </h3>
+        </div>
+        <div class="panel-body">
+            <div class="panel panel-default text-center">
+                <div class="panel-body">
+                    <div class="col-lg-12 col-md-12 ph-0">
+                        <div ng-if="availableInstancesToUser.length < 2">
+                            <div class="col-md-3 col-sm-6">
+                                <label>{{ 'AGENTS_LABEL' | translate }}:</label>
+                                <ui-select multiple
+                                           ng-model="examinationStatisticsFilter.selectedAgents"
+                                           theme="bootstrap"
+                                           close-on-select="false"
+                                           class="full-width">
+                                    <ui-select-match placeholder="{{ 'SELECT_AGENTS_PLACEHOLDER' | translate }}">
+                                        <small ng-bind-html="$item.name"></small>
+                                        <div ng-if="currentExaminationSource.source == ExaminationSource.Pebbles" style="display:inline">
+                                            <small> {{'FROM' | translate }} </small>
+                                            <small ng-bind-html="$item.instanceName"></small>
+                                        </div>
+                                    </ui-select-match>
+                                    <ui-select-choices refresh-delay="500" repeat="agent in agents" refresh="fetchAgents($select.search)">
+                                        <small ng-bind-html="agent.name"></small>
+                                        <div ng-if="currentExaminationSource.source == ExaminationSource.Pebbles" style="display:inline">
+                                            <small> {{'FROM' | translate }} </small>
+                                            <small ng-bind-html="agent.instanceName"></small>
+                                        </div>
+                                    </ui-select-choices>
+                                </ui-select>
+                            </div>
+                            <div class="col-md-3 col-sm-6">
+                                <label class="">{{ 'EXAMINATIONS_LABEL' | translate }}:</label>
+                                <div class="full-width" ng-dropdown-multiselect=""
+                                     options="examinations"
+                                     selected-model="examinationReportsFilter.selectedExaminations"
+                                     extra-settings="selectSettings">
+                                </div>
+                            </div>
+                        </div>
+                        <div ng-if="availableInstancesToUser.length > 1">
+                            <div class="col-md-2 col-sm-6">
+                                <label>{{ 'AGENTS_LABEL' | translate }}:</label>
+                                <ui-select multiple
+                                           ng-model="examinationStatisticsFilter.selectedAgents"
+                                           theme="bootstrap"
+                                           close-on-select="false"
+                                           class="full-width">
+                                    <ui-select-match placeholder="{{ 'SELECT_AGENTS_PLACEHOLDER' | translate }}">
+                                        <small ng-bind-html="$item.name"></small>
+                                        <div ng-if="currentExaminationSource.source == ExaminationSource.Pebbles" style="display:inline">
+                                            <small> {{'FROM' | translate }} </small>
+                                            <small ng-bind-html="$item.instanceName"></small>
+                                        </div>
+                                    </ui-select-match>
+                                    <ui-select-choices refresh-delay="500" repeat="agent in agents" refresh="fetchAgents($select.search)">
+                                        <small ng-bind-html="agent.name"></small>
+                                        <div ng-if="currentExaminationSource.source == ExaminationSource.Pebbles" style="display:inline">
+                                            <small> {{'FROM' | translate }} </small>
+                                            <small ng-bind-html="agent.instanceName"></small>
+                                        </div>
+                                    </ui-select-choices>
+                                </ui-select>
+                            </div>
+                            <div class="col-md-2 col-sm-6">
+                                <label class="">{{ 'EXAMINATIONS_LABEL' | translate }}:</label>
+                                <div class="full-width" ng-dropdown-multiselect=""
+                                     options="examinations"
+                                     selected-model="examinationStatisticsFilter.selectedExaminations"
+                                     extra-settings="selectSettings">
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-sm-6">
+                                <label class="">{{ 'INSTANCES_LABEL' | translate }}:</label>
+                                <div class="full-width" ng-dropdown-multiselect=""
+                                     options="availableInstancesToUser"
+                                     selected-model="examinationStatisticsFilter.selectedInstances"
+                                     extra-settings="selectSettings">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <label class="">{{ 'STATISTIC_BY_LABEL' | translate }}:</label>
+                            <select class="form-control full-width" ng-model="examinationStatisticsFilter.selectedStatisticFilter" ng-init="examinationStatisticsFilter.selectedStatisticFilter = statisticType.ByAgent">
+                                <option ng-repeat="option in statisticBy" value="{{option.type}}">{{option.name| translate}}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-2 col-sm-6">
+                            <label class="">{{ 'FROM_DATE_LABEL' | translate }}:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control full-width"
+                                       uib-datepicker-popup="dd-MM-yyyy"
+                                       is-open="startDatePopup.opened"
+                                       readonly
+                                       ng-model="examinationStatisticsFilter.startTime"
+                                       datepicker-options="startDateOptions" ng-change="changeMinEndTime()" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default calendar-button" ng-click="openStartDatePopup()"><i class="glyphicon glyphicon-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-2 col-sm-6">
+                            <label class="">{{ 'TO_DATE_LABEL' | translate }}:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control full-width"
+                                       uib-datepicker-popup="dd-MM-yyyy"
+                                       is-open="endDatePopup.opened"
+                                       readonly
+                                       ng-model="examinationStatisticsFilter.endTime"
+                                       datepicker-options="endDateOptions" ng-change="changeMaxStartTime()" />
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-default calendar-button" ng-click="openEndDatePopup()"><i class="glyphicon glyphicon-calendar"></i></button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-12 col-md-12 ph-0" style="padding-top:25px;">
+                        <div class="form-group col-md-3 col-sm-6">
+                            <div class="big ui buttons">
+                                <button class="ui button" ng-click="changeExaminationSource(ExaminationSource.Barney)" ng-class="currentExaminationSource.source === ExaminationSource.Barney ? 'active' : ''">Barney</button>
+                                <div class="or"></div>
+                                <button class="ui button" ng-click="changeExaminationSource(ExaminationSource.Pebbles)" ng-class="currentExaminationSource.source === ExaminationSource.Pebbles ? 'active' : ''">Pebbles</button>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-3 col-sm-6">
+                            <button type="reset" class="btn btn-default full-width" ng-click="reload()">
+                                <span class="glyphicon glyphicon-refresh"></span>{{ 'RELOAD_LABEL' | translate }}
+                            </button>
+                        </div>
+                        <div class="form-group col-md-3 col-sm-6">
+                            <button type="reset" class="btn btn-default full-width" ng-click="reset()">
+                                <span class="glyphicon glyphicon-record"></span>{{ 'RESET_LABEL' | translate }}
+                            </button>
+                        </div>
+                        <div ng-if="availableInstancesToUser.length < 2">
+                            <div class="form-group col-md-3 col-sm-6">
+                                <button type="submit"
+                                        class="btn btn-success full-width"
+                                        ng-click="getStatistics()"
+                                        ng-disabled="(examinationStatisticsFilter.endTime == null ||
+                                                      examinationStatisticsFilter.startTime == null ||
+                                                      examinationStatisticsFilter.selectedStatisticFilter == null ||
+                                                      !examinationStatisticsFilter.selectedExaminations.length)">
+                                    <span class="glyphicon glyphicon-filter"></span> {{ 'FILTER_LABEL' | translate }}
+                                </button>
+                            </div>
+                        </div>
+                        <div ng-if="availableInstancesToUser.length > 1">
+                            <div class="form-group col-md-3 col-sm-6">
+                                <button type="submit"
+                                        class="btn btn-success full-width"
+                                        ng-click="getStatistics()"
+                                        ng-disabled="(examinationStatisticsFilter.endTime == null ||
+                                                      examinationStatisticsFilter.startTime == null ||
+                                                      examinationStatisticsFilter.selectedStatisticFilter == null ||
+                                                      !examinationStatisticsFilter.selectedExaminations.length ||
+                                                      !examinationStatisticsFilter.selectedInstances.length)">
+                                    <span class="glyphicon glyphicon-filter"></span> {{ 'FILTER_LABEL' | translate }}
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="ph-15" ng-if="pagination.totalItems!==0">
+                    <div class="text-center">
+                        <ul uib-pagination total-items="pagination.totalItems"
+                            items-per-page="pagination.itemsPerPage"
+                            ng-model="pagination.currentPage"
+                            ng-click="setPage()"
+                            max-size="pagination.maxVisiblePages"
+                            class="pagination-md"
+                            boundary-links="true"
+                            first-text="&laquo;"
+                            last-text="&raquo;"
+                            next-text="&rsaquo;"
+                            previous-text="&lsaquo;"></ul>
+                    </div>
+                    <table class="table">
+                        <thead>
+                            <tr class="filters">
+                                <th class="text-center cursor-pointer"
+                                    ng-click="sortBy('agentName')"
+                                    ng-if="IsByAgent">
+                                    {{ 'AGENT_NAME' | translate }}
+                                    <span class="sortorder" ng-show="propertyName === 'agentName'" ng-class="{reverse: reverse}"></span>
+                                </th>
+                                <th class="text-center cursor-pointer"
+                                    ng-click="sortBy('examinationName')"
+                                    ng-if="IsByAgent">
+                                    {{ 'EXAMINATION_NAME' | translate }}
+                                    <span class="sortorder" ng-show="propertyName === 'examinationName'" ng-class="{reverse: reverse}"></span>
+                                </th>
+                                <th class="text-center cursor-pointer"
+                                    ng-click="sortBy('examinationName')"
+                                    ng-if="!IsByAgent">
+                                    {{ 'EXAMINATION_NAME' | translate }}
+                                    <span class="sortorder" ng-show="propertyName === 'examinationName'" ng-class="{reverse: reverse}"></span>
+                                </th>
+                                <th class="text-center cursor-pointer"
+                                    ng-click="sortBy('agentName')"
+                                    ng-if="!IsByAgent">
+                                    {{ 'AGENT_NAME' | translate }}
+                                    <span class="sortorder" ng-show="propertyName === 'agentName'" ng-class="{reverse: reverse}"></span>
+                                </th>
+                                <th class="text-center cursor-pointer"
+                                    ng-click="sortBy('averagePositiveAnswersPercentage')">
+                                    {{ 'AVERAGE_POSITIVE_ANSWERS_PERCENTAGE' | translate }}
+                                    <span class="sortorder" ng-show="propertyName === 'averagePositiveAnswersPercentage'" ng-class="{reverse: reverse}"></span>
+                                </th>
+                                <th class="text-center cursor-pointer"
+                                    ng-click="sortBy('averageFailedAnswersPercentage')">
+                                    {{ 'AVERAGE_FAILED_ANSWERS_PERCENTAGE' | translate }}
+                                    <span class="sortorder" ng-show="propertyName === 'averageFailedAnswersPercentage'" ng-class="{reverse: reverse}"></span>
+                                </th>
+                                <th class="text-center cursor-pointer"
+                                    ng-click="sortBy('averageTimeUpsPercentage')">
+                                    {{ 'AVERAGE_TIME_UPS_PERCENTAGE' | translate }}
+                                    <span class="sortorder" ng-show="propertyName === 'averageTimeUpsPercentage'" ng-class="{reverse: reverse}"></span>
+                                </th>
+                                <th class="text-center cursor-pointer"
+                                    ng-click="sortBy('averageReationTime')">
+                                    {{ 'AVERAGE_REACTION_TIME' | translate }}
+                                    <span class="sortorder" ng-show="propertyName === 'averageReationTime'" ng-class="{reverse: reverse}"></span>
+                                </th>
+                            </tr>
+                            <tr class="filters"></tr>
+                        </thead>
+                        <tbody ng-repeat="examinationStatistic in paginatedExaminationStatistic">
+                            <tr>
+                                <td ng-if="IsByAgent" class="text-center">{{ examinationStatistic.agentName }}</td>
+                                <td ng-if="IsByAgent" class="text-center">{{ examinationStatistic.examinationName  }}</td>
+                                <td ng-if="!IsByAgent" class="text-center">{{ examinationStatistic.examinationName  }}</td>
+                                <td ng-if="!IsByAgent" class="text-center">{{ examinationStatistic.agentName }}</td>
+                                <td class="text-center">{{ examinationStatistic.averagePositiveAnswersPercentage | number: 2 }}</td>
+                                <td class="text-center">{{ examinationStatistic.averageFailedAnswersPercentage | number: 2 }}</td>
+                                <td class="text-center">{{ examinationStatistic.averageTimeUpsPercentage | number: 2  }}</td>
+                                <td class="text-center">{{ examinationStatistic.averageReationTime | number: 2 }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="col-md-12 ph-0">
+                        <button type="button" class="btn btn-success full-width"
+                                ng-csv="examinationStatisticToFile"
+                                csv-header="GetCSVHeaders();"
+                                field-separator=","
+                                filename="{{csvFileName}}.csv">
+                            {{ 'SAVE_STATISTIC_LABEL' | translate }}
+                        </button>
+                    </div>
+                    <div class="text-center">
+                        <ul uib-pagination total-items="pagination.totalItems"
+                            items-per-page="pagination.itemsPerPage"
+                            ng-model="pagination.currentPage"
+                            ng-click="setPage()"
+                            max-size="pagination.maxVisiblePages"
+                            class="pagination-md"
+                            boundary-links="true"
+                            first-text="&laquo;"
+                            last-text="&raquo;"
+                            next-text="&rsaquo;"
+                            previous-text="&lsaquo;"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,327 @@
+﻿<div class="row examination-info" ng-init="initialize()"
+     cg-busy="[
+         fetchExaminationPromise,
+         fetchQuestionsPromise,
+         fetchAudioFilesPromise,
+         updateExaminationRandomStatePromise,
+         updateExaminationPromise,
+         deleteQuestionPromise,
+         addQuestionPromise
+     ]">
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <form name="examinationInputForm">
+                <div class="row" ng-if="examination">
+                    <div class="col-md-6 col-sm-12">
+                        <div class="col-sm-6 col-xs-12">
+                            <label class="full-width text-center"> {{ 'EXAMINATION_TITLE' | translate }}</label>
+                            <input type="text"
+                                   requeired
+                                   name="examinationTitle"
+                                   class="form-control input-sm"
+                                   ng-model="examination.name"
+                                   ng-model-options="{debounce:500}"
+                                   ng-change="onExaminationNameChanged()"
+                                   ng-minlength="3"
+                                   ng-maxlength="30" />
+                        </div>
+                        <div class="col-sm-6 col-xs-12">
+                            <label class="full-width text-center"> {{ 'ADDITIONAL_REACTION_TIME_LABEL' | translate }}</label>
+                            <input type="number"
+                                   step="any"
+                                   name="maxReactionTime"
+                                   class="form-control input-sm"
+                                   min="0"
+                                   max="120"
+                                   required
+                                   ng-model="examination.reactionTime">
+                        </div>
+                        <div class="col-sm-6 col-xs-12 mt-10">
+                            <button class="btn btn-success full-width"
+                                    ng-click="updateExamData()"
+                                    ng-disabled="examinationInputForm.$invalid || examinationInputForm.$pristine || !isExaminationChanged()">
+                                {{ 'UPDATE_EXAM_DATA_LABEL' | translate }}
+                                <span class="glyphicon glyphicon-floppy-saved"></span>
+                            </button>
+                        </div>
+                        <div class="col-sm-6 col-xs-12 mt-10">
+                            <button class="btn btn-default full-width"
+                                    ng-click="resetExamData()"
+                                    ng-disabled="examinationInputForm.$pristine || !isExaminationChanged()">
+                                {{ 'RESET_EXAM_DATA_LABEL' | translate }}
+                                <span class="glyphicon glyphicon-floppy-remove"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-sm-12 text-center">
+                        <label class="full-width text-center"> {{ 'PLAY_RANDOM_SWITCH_LABEL' | translate }}: {{ examination.isRandom ? 'ON_LABEL' : 'OFF_LABEL' | translate }}</label>
+                        <md-switch style="display:inline-block; margin:0px"
+                                   ng-model="examination.isRandom"
+                                   ng-change="changeRandomState()">
+                        </md-switch>
+                    </div>
+                    <div class="col-md-4 col-sm-12">
+                        <div class="col-md-12 col-sm-5">
+                            <label class="pull-left"> {{ 'EXAMINATION_DATE_OF_CREATION' | translate }}</label>
+                            <label class="pull-right">{{ examination.creationTime }}</label>
+                        </div>
+                        <div class="col-md-12 col-sm-5">
+                            <label class="pull-left">{{ 'EXAMINATION_DATE_OF_CHANGE' | translate }}</label>
+                            <label class="pull-right">{{ examination.modificationTime }}</label>
+                        </div>
+                        <div class="col-md-12 col-sm-5">
+                            <label class="pull-left">{{ 'ANSWER_SET_FOR_EXAMINATION_CONFIGURATION' | translate }}</label>
+                            <label class="pull-right">{{ examination.answerSetName  }}</label>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="panel-body">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div class="row">
+                        <form name="questionForm">
+                            <div class="col-lg-3 col-md-6 col-sm-12">
+                                <label class="control-label text-center" style="width:100%">{{'SELECT_EXAMINATION_QUESTION_AUDIO_LABEL' | translate}}</label>
+                                <input type="text"
+                                       list="questionAudioFile"
+                                       class="form-control input-sm"
+                                       ng-disabled="isQuestionEdit"
+                                       name="questionAudioFile"
+                                       ng-minlength="3" 
+                                       ng-maxlength="50"
+                                       ng-model="question.questionAudioFile.name"
+                                       ng-model-options="{debounce:500}"
+                                       ng-change="onChangeAudioFileName(question.questionAudioFile.name)"
+                                       placeholder="{{'EXAMINATION_QUESTION_TITLE_LABEL' | translate}}"
+                                       autocomplete="off">
+                                <datalist id="questionAudioFile">
+                                    <option ng-repeat="audioFile in  questionAudioFiles track by $index" ng-value="audioFile.name"></option>
+                                </datalist>
+                            </div>
+                            <div class="col-lg-3 col-md-6 col-sm-12">
+                                <label class="control-label text-center" style="width:100%">{{'PERFECT_REACTION_TIME_LABEL' | translate}}</label>
+                                <div class="row">
+                                    <div class="col-sm-10">
+                                        <input type="number" 
+                                               name="perfectTime" 
+                                               step="any"
+                                               min="0"
+                                               class="form-control input-sm" 
+                                               ng-disabled="!isQuestionEdit && (questionForm.questionAudioFile.$invalid || questionForm.questionAudioFile.$pristine)"
+                                               ng-change="onChangeReactionTime()" 
+                                               ng-model="question.perfectReactionTime" 
+                                               style="display:inline !important">
+                                    </div>
+                                    <div class="col-sm-2">
+                                        <a ng-show="temporaryAudioFile.loadingFile && isQuestionEdit">
+                                            <span style="font-size:20px" class="fa fa-spinner fa-spin"></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-md-12 mb-10">
+                                <label class="control-label text-center full-width">{{'POSSIBLE_ANSWERS_LABEL' | translate}}</label>
+                                <table class="table table-sm">
+                                    <tr>
+                                        <th class="text-center" style="padding-top: 0px; border-top:0px" width="25%">
+                                            <select class="form-control input-sm"
+                                                    ng-model="selectedAnswer.type"
+                                                    ng-change="onChangeAnswerType()"
+                                                    ng-init="selectedAnswer.type = answerTypes[0].value"
+                                                    ng-options="type.value as type.label | translate for type in answerTypes"></select>
+                                        </th>
+                                        <th class="text-center" style="padding-top:0; border-top:0px" width="65%">
+                                            <input type="text"
+                                                   list="answers"
+                                                   class="form-control input-sm"
+                                                   name="answer"
+                                                   ng-model="selectedAnswer.name"
+                                                   ng-model-options="{debounce:500}"
+                                                   ng-change="onChangeAnswerName()"
+                                                   placeholder="{{'EXAMINATION_ANSWER_LABEL' | translate}}"
+                                                   autocomplete="off">
+                                            <datalist id="answers" ng-show="answersToDisplay.length != 0">
+                                                <option ng-repeat="answer in answersToDisplay track by $index" ng-value="answer.name"></option>
+                                            </datalist>
+                                        </th>
+                                        <th class="text-center" style="width:10%; padding-top:0; border-top:0px">
+                                            <button class="btn btn-success"
+                                                    ng-disabled="questionForm.answer.$invalid || questionForm.answer.$pristine"
+                                                    ng-click="addAnswerToQuestion()">
+                                                <span class="glyphicon glyphicon-plus"></span>
+                                            </button>
+                                        </th>
+                                    </tr>
+                                </table>
+                                <div ng-repeat="answer in question.answers">
+                                    <div class="row">
+                                        <div class="col-sm-10">
+                                            <div class="ui mini steps">
+                                                <div class="step">
+                                                    <div class="content">
+                                                        <div class="title">
+                                                            <span class="label text-center" ng-class="getClassForDisplay(answer.type)">
+                                                                {{ getAnswerTypeLabel(answer.type) | translate }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="description">
+                                                            {{answer.name}}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="step" ng-repeat="nextAnswer in answer.nextAnswers">
+                                                    <div class="content">
+                                                        <div class="title">
+                                                            <span class="label text-center" ng-class="getClassForDisplay(nextAnswer.type)">
+                                                                {{ getAnswerTypeLabel(nextAnswer.type) | translate }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="description">
+                                                            {{ nextAnswer.name }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="mb-5 ml-5">
+                                                        <button class="btn btn-danger btn-sm"
+                                                                ng-click="deleteAnswerFromQueue(answer, nextAnswer); $event.stopPropagation();">
+                                                            <span class="glyphicon glyphicon-trash" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class=" col-sm-2">
+                                            <div class="row" style="margin-top:3px;">
+                                                <div class="col-sm-6">
+                                                    <button class="btn btn-primary btn-sm" ng-click="!answer.openedQueue ? openQueue(answer) : closeQueue(answer)">
+                                                        <span ng-class="!answer.openedQueue ? 'glyphicon glyphicon-list' : 'glyphicon glyphicon-ok'"></span>
+                                                    </button>
+                                                </div>
+                                                <div class="col-sm-6">
+                                                    <button class="btn btn-danger btn-sm" ng-click="deleteAnswerFromQuestion($index); $event.stopPropagation();">
+                                                        <span class="glyphicon glyphicon-trash" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ui horizontal divider" ng-if="!$last">
+                                        {{ 'OR_DIVIDER' | translate }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row text-center">
+                                <div class="col-sm-6">
+                                    <button class="btn btn-success full-width"
+                                            ng-show="question.answers.length"
+                                            ng-disabled="questionForm.$invalid || questionForm.$pristine"
+                                            ng-click="saveQuestion()">
+                                        {{ getSaveQuestionLabel() | translate}}
+                                        <span class="glyphicon" 
+                                              ng-class="{
+                                                'glyphicon-plus': !isQuestionEdit,
+                                                'glyphicon-floppy-saved': isQuestionEdit}">
+                                        </span>
+                                    </button>
+                                </div>
+                                <div class="col-sm-6">
+                                    <button class="btn btn-default full-width"
+                                            ng-show="question.answers.length"
+                                            ng-click="resetQuestionForm()">
+                                        {{'CANCEL_BUTTON_LABEL' | translate}}
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="text-center" ng-show="pagination.totalItems > 10">
+                        <ul uib-pagination total-items="pagination.totalItems"
+                            items-per-page="pagination.itemsPerPage"
+                            ng-model="pagination.currentPage"
+                            ng-click="setPageQuestions()"
+                            max-size="pagination.maxVisiblePages"
+                            boundary-links="true"
+                            first-text="&laquo;"
+                            last-text="&raquo;"
+                            next-text="&rsaquo;"
+                            previous-text="&lsaquo;"></ul>
+                    </div>
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th class="text-center">{{'EXAMINATION_QUESTION_TITLE_LABEL' | translate}}</th>
+                                <th class="text-center">{{'DEFAULT_REACTION_TIME_LABEL' | translate}}</th>
+                                <th class="text-left" width="50%">{{'ANSWERS_LABEL' | translate}}</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="question in questionsPaginated">
+                                <th class="text-center">{{question.audioFileName}}</th>
+                                <th class="text-center">{{question.perfectReactionTime| number: 1}}</th>
+                                <th class="text-left">
+                                    <div class="row" ng-repeat="answer in question.answers">
+                                        <div class="ui mini steps">
+                                            <div class="step">
+                                                <div class="content">
+                                                    <div class="title">
+                                                        <span class="label text-center" ng-class="getClassForDisplay(answer.type)">
+                                                            {{ getAnswerTypeLabel(answer.type) | translate }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="description">
+                                                        {{answer.name}}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="step" ng-repeat="nextAnswer in answer.nextAnswers">
+                                                <div class="content">
+                                                    <div class="title">
+                                                        <span class="label text-center" ng-class="getClassForDisplay(nextAnswer.type)">
+                                                            {{ getAnswerTypeLabel(nextAnswer.type) | translate }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="description">
+                                                        {{ nextAnswer.name }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ui horizontal divider" ng-if="!$last">
+                                            {{ 'OR_DIVIDER' | translate }}
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="float-right">
+                                    <button class="btn btn-primary" ng-click="editQuestion(question); $event.stopPropagation();">
+                                        <span class="glyphicon glyphicon-pencil" />
+                                    </button>
+                                    <button class="btn btn-danger" ng-click="confirmDeleteQuestion(question.id); $event.stopPropagation();">
+                                        <span class="glyphicon glyphicon-trash" />
+                                    </button>
+                                </th>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="text-center" ng-show="pagination.totalItems > 10">
+                        <ul uib-pagination total-items="pagination.totalItems"
+                            items-per-page="pagination.itemsPerPage"
+                            ng-model="pagination.currentPage"
+                            ng-click="setPageQuestions()"
+                            max-size="pagination.maxVisiblePages"
+                            boundary-links="true"
+                            first-text="&laquo;"
+                            last-text="&raquo;"
+                            next-text="&rsaquo;"
+                            previous-text="&lsaquo;"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="containerForWavesurfer" ng-show="false"></div>
+</div>

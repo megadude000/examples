@@ -1,0 +1,42 @@
+﻿<form name="importModelForm">
+    <div class="panel panel-info conversation-transcription">
+        <div class="panel-heading">
+            <h3 class="panel-title" style="text-align:center">{{title}}</h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="col-md-6 text-center">
+                    <label class="full-width text-center">{{ 'SELECT_PRIORITY_LEVEL' | translate }}</label>
+                    <select class="form-control full-width"
+                            ng-model="importModel.priority"
+                            ng-options="priorityLevel for priorityLevel in priorityLevels">
+                    </select>
+                </div>
+                <div class="col-md-6 text-center">
+                    <label class="control-label">{{ 'COMMENT_LABEL' | translate }}</label>
+                    <input type="text"
+                           name="commentInput"
+                           class="form-control"
+                           ng-maxlength="128"
+                           ng-model="importModel.comment"
+                           placeholder="{{ 'COMMENT_PLACEHOLDER' | translate }}" />
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <div class="row">
+                <div class="col-md-1">
+                    <button class="btn btn-primary"
+                            type="submit"
+                            ng-click="save(importModelForm)"
+                            ng-disabled="importModelForm.$invalid || importModelForm.$pristine">
+                        <span class="glyphicon glyphicon-floppy-save" />
+                    </button>
+                </div>
+                <div class="col-md-offset-11">
+                    <button class="btn btn-default" type="button" ng-click="cancel()"><span class="glyphicon glyphicon-ban-circle" /></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

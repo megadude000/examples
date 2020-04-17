@@ -1,0 +1,31 @@
+﻿syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.Companysoftware.contract";
+option java_outer_classname = "AudioUpdateNotificationService";
+option objc_class_prefix = "AUNOTIFY";
+option csharp_namespace = "Company.Gazoo.Communication.Contracts.AudioUpdateNotifications";
+
+package AudioUpdateNotification;
+
+import "soundboard_commons.proto";
+
+service AudioUpdateNotificationService {
+    rpc AudioUpdatesAvailable(NotificationRequest) returns (SoundboardCommons.ResponseStatus) {}
+    rpc GetMissingFiles(MissingFilesRequest) returns (SoundboardCommons.ResponseStatus) {}
+}
+
+message NotificationRequest { 
+    SoundboardCommons.NotificationAction action = 1;
+    string ftp_ip = 2;
+    int32 ftp_port = 3;
+    string file_name = 4; 
+    string ftp_login = 5; 
+    string ftp_password = 6;
+    string old_file_name = 7;
+} 
+
+message MissingFilesRequest {
+    string endpoint = 1;
+    repeated string FileNames = 2;
+}

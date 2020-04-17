@@ -1,0 +1,20 @@
+﻿<div class="panel panel-info conversation-transcription" data-ng-init="setSelected()">
+    <div class="panel-heading">
+        <label class="full-width text-center">{{ labelGroupName }} <span class="glyphicon glyphicon-refresh float-right" style="cursor:pointer" ng-click="refresh()"></span></label>
+    </div>
+    <ul class="list-group" ng-repeat="label in data.labels">
+        <li class="list-group-item">
+            <div class="row">
+                <div class="col-lg-3 col-md-4 col-sm-4">
+                    <input type="checkbox"
+                           class="btn btn-warning btn-s text-center"
+                           ng-model="label.isSelected"
+                           ng-click="!data.labelGroup.multipleSelect && unselectExcept(label.id)" />
+                </div>
+                <div class="col-lg-9 col-md-8 col-sm-8">
+                    {{label.name}}
+                </div>
+            </div>
+        </li>
+    </ul>
+</div>

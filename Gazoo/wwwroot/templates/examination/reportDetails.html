@@ -1,0 +1,221 @@
+﻿<div class="row examination-info" cg-busy="[fetchExaminationPromise]">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title" style="text-align:center">
+                {{ 'EXAMINATION_REPORT_INFO' | translate }}
+            </h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="panel-body">
+                    <div class="col-lg-12 col-md-12 ph-0">
+                        <div class="col-md-3 col-sm-6">
+                            <span class="label label-default">{{ 'EXAMINATION_NAME' | translate }}:</span>
+                            {{examinationReport.examinationResult.examination.name}}
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <span class="label label-default">{{ 'AGENT_NAME' | translate }}:</span>
+                            {{examinationReport.examinationResult.agent.name + ' ' + examinationReport.examinationResult.agent.surname}}
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <span class="label label-default">{{ 'EXAMINATION_START_DATE' | translate }}:</span>
+                            {{examinationReport.examinationResult.startDate | date :  "dd.MM.yyyy HH:mm:ss"}}
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <span class="label label-default">{{ 'EXAMINATION_END_DATE' | translate }}:</span>
+                            {{examinationReport.examinationResult.endDate | date :  "dd.MM.yyyy HH:mm:ss"}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h3 class="panel-title" style="text-align:center">
+                {{ 'EXAMINATION_REPORT_STATISTIC' | translate }}
+            </h3>
+        </div>
+        <div class="panel-body">
+            <div class="row">
+                <div class="panel-body">
+                    <div class="col-lg-12 col-md-12 ph-0">
+                        <div class="col-md-2 col-sm-6">
+                            <span class="label label-default">{{ 'TOTAL_QUESTIONS' | translate }}:</span>
+                            {{examinationReport.examinationResult.allQuestions}}
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <span class="label label-default">{{ 'TOTAL_ANSWERS' | translate }}:</span>
+                            {{examinationReport.examinationResult.allAnswers}}
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <span class="label label-default">{{ 'AVERAGE_REACTION_TIME' | translate }}:</span>
+                            {{examinationReport.examinationResult.averageReactionTime}}
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <span class="label label-success">{{ 'CORRECT_ANSWERS' | translate }}:</span>
+                            {{examinationReport.examinationResult.correctAnswers}}
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <span class="label label-danger">{{ 'FAILED_ANSWERS' | translate }}:</span>
+                            {{examinationReport.examinationResult.failedAnswers}}
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <span class="label label-danger">{{ 'TIME_UPS' | translate }}:</span>
+                            {{examinationReport.examinationResult.timeUps}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="panel panel-primary text-center">
+        <div class="panel-heading">
+            <h3 class="panel-title" style="text-align:center">
+                {{ 'EXAMINATION_REPORT_QUESTION_INFO' | translate }}
+            </h3>
+        </div>
+        <div class="panel-body">
+            <table class="table">
+                <thead>
+                    <tr class="filters">
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('questionAudioName')">
+                            {{ 'QUESTION_AUDIO_NAME' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'questionAudioName'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-left cursor-pointer"
+                            ng-click="sortBy('selectedAnswer')">
+                            {{ 'SELECTED_ANSWER' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'selectedAnswer'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-left cursor-pointer"
+                            ng-click="sortBy('availableAnswers')">
+                            {{ 'AVAILABLE_ANSWERS' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'availableAnswers'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('reactionTime')">
+                            {{ 'REACTION_TIME' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'reactionTime'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer" width="15%"
+                            ng-click="sortBy('answerResult')">
+                            {{ 'ANSWER_RESULT' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'answerResult'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                    </tr>
+                    <tr class="filters"></tr>
+                </thead>
+                <tbody ng-repeat="result in examinationReport.questionResults">
+                    <tr>
+                        <td class="text-center" width="25%">
+                            <div class="row">
+                                <div class="pull-left">
+                                    <a ng-click="downloadAudioFile(result)" ng-show="!result.audioShow">
+                                        <span style="font-size:20px" ng-class="!result.loadingFile ? 'fa fa-chevron-down' : 'fa fa-spinner fa-spin';"></span>
+                                    </a>
+                                    <a ng-click="closeAudioFile(result)" ng-show="result.audioShow">
+                                        <span style="font-size:20px" class="fa fa-chevron-up"></span>
+                                    </a>
+                                </div>
+                                {{ result.question.questionAudioFile.name }}
+                            </div>
+                            <div class="row" ng-show="result.audioShow">
+                                <div class="align-middle" style="float: left;">
+                                    <a ng-click="playPauseAudioFile(result)">
+                                        <span style="font-size:30px" ng-class="!result.playing ? 'glyphicon glyphicon-play-circle' : 'glyphicon glyphicon-pause';"></span>
+                                    </a>
+                                </div>
+                                <div class="align-middle" style="float: left; margin: 1px 5px 1px 5px">
+                                    <a ng-click="stopAudioFile(result)">
+                                        <span style="font-size:30px" class="fa fa-stop-circle-o"></span>
+                                    </a>
+                                </div>
+                                <div class="align-middle" style="overflow: auto;">
+                                    <div id="resultWaveAudioPlayer{{result.question.questionAudioFileId}}"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <th class="text-left" width="25%">
+                            <div class="row">
+                                <div class="ui mini steps" ng-if="result.selectedAnswer != null">
+                                    <div class="step">
+                                        <div class="content">
+                                            <div class="title">
+                                                <span class="label text-center" ng-class="result.selectedAnswer.type === 1 ? 'label-success' : (result.selectedAnswer.type === 2 ? 'label-warning' : (result.selectedAnswer.type === 3 ? 'label-primary' : 'label-default'))">
+                                                    {{ GetTypeAsString(result.selectedAnswer.type) | translate }}
+                                                </span>
+                                            </div>
+                                            <div class="description">
+                                                {{result.selectedAnswer.name}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="step" ng-repeat="nextAnswer in result.selectedAnswer.nextAnswers">
+                                        <div class="content">
+                                            <div class="title">
+                                                <span class="label text-center" ng-class="nextAnswer.type === 1 ? 'label-success' : (nextAnswer.type === 2 ? 'label-warning' : (nextAnswer.type === 3 ? 'label-primary' : 'label-default'))">
+                                                    {{ GetTypeAsString(nextAnswer.type) | translate }}
+                                                </span>
+                                            </div>
+                                            <div class="description">
+                                                {{ nextAnswer.name }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div ng-if="result.selectedAnswer == null">
+                                    <span class="label text-center" ng-class="result.selectedAnswer.type === 1 ? 'label-success' : (result.selectedAnswer.type === 2 ? 'label-warning' : (result.selectedAnswer.type === 3 ? 'label-primary' : 'label-default'))">
+                                        {{ GetTypeAsString(result.selectedAnswer.type) | translate }}
+                                    </span>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="text-left" width="25%">
+                            <div class="row" ng-repeat="answer in result.answers">
+                                <div class="ui mini steps">
+                                    <div class="step">
+                                        <div class="content">
+                                            <div class="title">
+                                                <span class="label text-center" ng-class="answer.type === 1 ? 'label-success' : (answer.type === 2 ? 'label-warning' : (answer.type === 3 ? 'label-primary' : 'label-default'))">
+                                                    {{ GetTypeAsString(answer.type) | translate }}
+                                                </span>
+                                            </div>
+                                            <div class="description">
+                                                {{answer.name}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="step" ng-repeat="nextAnswer in answer.nextAnswers">
+                                        <div class="content">
+                                            <div class="title">
+                                                <span class="label text-center" ng-class="nextAnswer.type === 1 ? 'label-success' : (nextAnswer.type === 2 ? 'label-warning' : (nextAnswer.type === 3 ? 'label-primary' : 'label-default'))">
+                                                    {{ GetTypeAsString(nextAnswer.type) | translate }}
+                                                </span>
+                                            </div>
+                                            <div class="description">
+                                                {{ nextAnswer.name }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="ui horizontal divider" ng-if="!$last">
+                                    {{ 'OR_DIVIDER' | translate }}
+                                </div>
+                            </div>
+                        </th>
+                        <td class="text-center" width="10%">
+                            {{ result.reactionTime }}
+                        </td>
+                        <td class="text-center" width="15%">
+                            <span class="label" ng-class="result.result === 1 ? 'label-success' : (result.result === 2 ? 'label-danger' : (result.result === 3 ? 'label-primary' : 'label-default'))">
+                                {{ GetResultTypeAsString(result.result) | translate }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+﻿syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.Companysoftware.contract";
+option java_outer_classname = "SubscriptionActions";
+option objc_class_prefix = "AUNOTIFY";
+option csharp_namespace = "Company.Gazoo.Communication.Contracts.SubscriptionActions";
+
+package SubscriptionActions;
+
+import "soundboard_commons.proto";
+
+service SubscriptionActionsService {
+    rpc Subscribe(SubscriptionRequest) returns (SoundboardCommons.ResponseStatus) {}
+    rpc Unsubscribe(UnsubscriptionRequest) returns (SoundboardCommons.ResponseStatus) {}
+}
+
+message SubscriptionRequest {
+    string endpoint = 1;
+    string instance_name = 2;
+    int32 target = 3;
+}
+
+message UnsubscriptionRequest {
+    string endpoint = 1;
+    int32 target = 2;
+}

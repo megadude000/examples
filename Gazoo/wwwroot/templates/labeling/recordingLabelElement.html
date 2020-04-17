@@ -1,0 +1,28 @@
+﻿<div class="full-width" ng-init="init()">
+    <div ng-if="label.type === labelElementType.Dropdown">
+        <select class="form-control"
+                ng-model="element.values"
+                ng-change="onChange(value)"
+                ng-options="label.id as label.name for label in element.options">
+        </select>
+    </div>
+
+    <div ng-if="label.type === labelElementType.DropdownMultiselect">
+        <div class="full-width"
+             ng-dropdown-multiselect=""
+             options="element.options"
+             selected-model="element.values"
+             extra-settings="element.multiselectSettings"
+             events="{ onSelectionChanged: onChange }">
+        </div>
+    </div>
+
+    <div ng-if="label.type === labelElementType.Checkbox">
+        <input class="checkbox center-block"
+               type="checkbox"
+               ng-model="element.values"
+               ng-true-value="{{ (element.options | filter : { name:'true' })[0].id }}"
+               ng-false-value="{{ (element.options | filter : { name:'false' })[0].id }}"
+               ng-change="onChange()">
+    </div>
+</div>

@@ -1,0 +1,32 @@
+﻿<div class="panel panel-primary" data-ng-init="setSearchingState()">
+    <div class="panel-heading clearfix">
+        <h3 class="panel-title" style="text-align:center">
+            <span ng-if="searchingRecording">{{ 'SELECT_RECORDING_LABEL' | translate }}</span>
+            <span ng-if="!searchingRecording">{{ 'SELECTED_RECORDING' | translate }} {{recordingId}}</span>
+            <span>{{ unsavedData }}</span>
+            <button class="btn btn-primary btn-sm ignore-panel-padding pull-right" ng-show="!searchingRecording" ng-click="cancel()">&times;</button>
+        </h3>
+    </div>
+    <div class="panel-body">
+        <div class="text-center" ng-show="searchingRecording">
+            <div class="row">
+                <div class="col-lg-offset-4 col-md-3">
+                    <input type="number"
+                           class="form-control input-sm"
+                           placeholder="{{ 'RECORDING_ID_PLACEHOLDER' | translate }}"
+                           ng-keypress="$event.key === 'Enter' && getRecording(recordingId)"
+                           ng-model="recordingId"
+                           autofocus />
+                </div>
+                <div class="col-md-1">
+                    <button type="submit"
+                            class="btn btn-success full-width"
+                            ng-click="getRecording(recordingId)">
+                        {{'SEARCH_LABEL' | translate}}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <recording-panel ng-if="!searchingRecording" recording-id="recordingId" />
+    </div>
+</div>

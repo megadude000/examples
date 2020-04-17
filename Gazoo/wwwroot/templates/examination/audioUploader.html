@@ -1,0 +1,57 @@
+﻿<div class="panel panel-danger" cg-busy="[uploadAudioFilesPromise]">
+    <div class="panel-body">
+        <div class="row" ng-form name="fileUpload">
+            <div class="col-md-6 mt-5 mb-5">
+                <label class="text-center" style="width:100%">{{ 'FILE_NAME_LABEL' | translate }}</label>
+                <input type="text"
+                       name="fileName"
+                       minlength="3"
+                       maxlength="50"
+                       ng-pattern="/^[a-zA-Zа-яА-Я0-9\s]+$/"
+                       required
+                       class="form-control"
+                       style="max-width: none"
+                       placeholder="{{ 'FILE_NAME_PLACEHOLDER' | translate }}"
+                       ng-model-options="{debounce:500}"
+                       ng-model="audioFileInfo.fileName"
+                       ng-change="checkIfFileExistOnServer(audioFileInfo.fileName)" />
+            </div>
+            <div class="col-md-6 mt-5 mb-5">
+                <label class="text-center" style="width:100%">{{ 'COMMENT_LABEL' | translate }}</label>
+                <input type="text"
+                       name="comment"
+                       class="form-control"
+                       maxlength="128"
+                       ng-model="audioFileInfo.comment"
+                       placeholder="{{ 'COMMENT_PLACEHOLDER' | translate }}" />
+            </div>
+            <div class="col-md-6 mt-5 mb-5">
+                <div class="col-sm-6">
+                    <label>&nbsp;</label>
+                    <input class="text-center" type="file" id="fileInput" nv-file-select="" uploader="uploader" />
+                </div>
+                <div class="col-sm-6">
+                    <div class="alert alert-danger" role="alert" ng-show="notProperFormat">
+                        <div class="row vertical-align">
+                            <div class="col-xs-2 text-center">
+                                <i class="fa fa-exclamation-triangle fa-2x"></i>
+                            </div>
+                            <div class="col-xs-10 text-center">
+                                {{ 'NOT_PROPER_FORMAT' | translate }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mt-5 mb-5">
+                <label>&nbsp;</label>
+                <button type="button" class="btn btn-success" style="width:100%;"
+                        ng-click="confirmUploadAudioMessage()"
+                        ng-disabled="fileUpload.$invalid || blockWhileCheking || !uploader.queue.length || notProperFormat">
+                    <span class="glyphicon glyphicon-upload"></span> {{ 'UPLOAD_LABEL' | translate}}
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>

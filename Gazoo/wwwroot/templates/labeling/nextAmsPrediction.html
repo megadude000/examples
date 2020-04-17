@@ -1,0 +1,151 @@
+﻿<div class="panel panel-primary conversation-transcription" cg-busy="[fetchAudioPromise, releaseAudioPromise, saveResultPromise]">
+    <div class="panel-heading">
+        <h3 class="panel-title" style="text-align:center">
+            {{ 'NEXT_AMS_PREDICTION_LABEL' | translate }}
+        </h3>
+    </div>
+    <div class="panel-body">
+        <div class="text-center" ng-show="!workInProgress">
+            <div class="row">
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-success btn-s" ng-click="startNextAmsPrediction()">
+                        <span class="glyphicon glyphicon-edit"></span> {{ 'START_NEXT_AMS_PREDICTION_LABEL' | translate }}
+                    </button>
+                </div>
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-info btn-s" ng-click="startNextAmsVerification()">
+                        <span class="glyphicon glyphicon-check"></span> {{ 'START_NEXT_AMS_VERIFICATION_LABEL' | translate }}
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="text-center" ng-show="nextAmsPredictionModel.loadingFile">
+            <span style="font-size:20px" class="fa fa-spinner fa-spin"></span>
+        </div>
+        <div ng-show="nextAmsPredictionModel.audioShow">
+            <div class="row equal-cols">
+                <div ng-if="authorFullName" class="col-md-2">
+                    <div class="panel panel-success panel-body">
+                        <div class="align-middle text-center">
+                            <label><strong>{{ 'PROCESSED_BY_LABEL' | translate }}: </strong></label>
+                            {{authorFullName}}
+                        </div>
+                    </div>
+                </div>
+                <div ng-class="authorFullName ? 'col-md-10' : 'col-md-12'">
+                    <div class="panel panel-success panel-body">
+                        <div class="align-middle" style="float: left;">
+                            <a ng-click="playPauseAudioFile()">
+                                <span style="font-size:30px" ng-class="!nextAmsPredictionModel.playing ? 'glyphicon glyphicon-play-circle' : 'glyphicon glyphicon-pause';"></span>
+                            </a>
+                        </div>
+                        <div class="align-middle" style="float: left; transform: translateY(50%); margin: 1px 5px 1px 5px; width:60px; text-align:center">
+                            {{ nextAmsPredictionModel.currentTime }}
+                        </div>
+                        <div class="align-middle" style="overflow: auto;">
+                            <div id="amsPredictionWaveAudioPlayer"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="margin-top:1em">
+                <div class="col-md-6">
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <h3 class="panel-title" style="text-align:center">
+                                {{ 'AM_HISTORY_LABEL' | translate }}
+                            </h3>
+                        </div>
+                        <div class="panel-body">
+                            <div align="center" style="margin: 15px 15px 15px 15px">
+                                <table class="table table-bordered table-fit full-width" style="width: auto;">
+                                    <thead style="background-color:lightgray">
+                                        <tr>
+                                            <th> {{'PLAYED_RECORDING_LABEL' | translate}}  </th>
+                                            <th> {{'AUDIOMESSAGE_NAME_LABEL' | translate}}  </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="amLog in audioMessageLogs">
+                                            <td> {{ amLog.audioCompleteness + '%'  }}</td>
+                                            <td> {{ amLog.audioName }} </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="panel panel-success panel-body">
+                        <div class="row">
+                            <div class="col-md-8 text-center align-middle">
+                                <label><strong>{{ 'IS_MOMENT_PERFECT_LABEL' | translate }}:</strong></label>
+                            </div>
+                            <div class="col-md-4" style="display: flex;">
+                                <toggle-switch ng-model="nextAmsPredictionModel.isPerfect"
+                                               on-label="{{ 'YES' | translate }}"
+                                               off-label="{{ 'NO' | translate }}">
+                                </toggle-switch>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel panel-success">
+                        <div class="panel-heading">
+                            <h3 class="panel-title" style="text-align:center">
+                                {{ 'POSSIBLE_AMS_LABEL' | translate }}
+                            </h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="full-width"
+                                 ng-dropdown-multiselect=""
+                                 options="possibleAms"
+                                 selected-model="selectedAms"
+                                 extra-settings="selectSettings">
+                            </div>
+                            <div class="dropzone container-element list-group box box-blue">
+                                <ul dnd-list="selectedAms"
+                                    dnd-drop="callback({targetList: selectedAms, targetIndex: index})">
+                                    <li ng-repeat="item in selectedAms"
+                                        dnd-draggable="item"
+                                        class="list-group-item"
+                                        dnd-callback="onDrop(selectedAms, $index, selectedAms, targetIndex)"
+                                        dnd-effect-allowed="move">
+                                        <span class="pull-left">
+                                            {{$index + 1}}
+                                        </span>
+                                        <span ng-bind="item.id"></span>
+                                        <div class="pull-right">
+                                            <button type="button"
+                                                    class="btn btn-warning btn-s"
+                                                    ng-init="!item.waitAnswer ? item.waitAnswer=false : item.waitAnswer"
+                                                    style="margin-left:1em;"
+                                                    ng-click="item.waitAnswer = !item.waitAnswer">
+                                                <span ng-class="item.waitAnswer ? 'glyphicon glyphicon-ok' : 'glyphicon glyphicon-remove'"></span>
+                                            </button>
+                                            <button type="button" class="btn btn-danger btn-s" ng-click="selectedAms.splice($index,1)">
+                                                <span class="glyphicon glyphicon-trash"></span>
+                                            </button>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="col-lg-1 col-md-2 col-sm-3">
+                    <button type="button" class="btn btn-danger btn-s float-left" ng-click="cancelAmsPrediction()">
+                        <span class="glyphicon glyphicon-erase"></span> {{ 'CANCEL_BUTTON_LABEL' | translate }}
+                    </button>
+                </div>
+                <div class="col-lg-offset-11 col-md-offset-10 col-sm-offset-9">
+                    <button type="button" class="btn btn-success btn-s float-right" ng-click="nextAudio()">
+                        <span class="glyphicon glyphicon-save"></span> {{ 'SAVE_BUTTON' | translate }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

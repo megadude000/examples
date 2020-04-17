@@ -1,0 +1,401 @@
+﻿<div class="panel panel-danger conversation-transcription" data-ng-init="initialize()" cg-busy="[getStatisticsPromise, fetchAgentsPromise]">
+    <div class="panel-heading">
+        <h3 class="panel-title" style="text-align:center">
+            {{ 'GENERATE_REPORT_LABEL' | translate }}
+        </h3>
+    </div>
+    <div class="panel-body">
+        <div class="col-md-2 col-sm-6">
+            <label>{{ 'STATISTICS_TYPE_LABEL' | translate }}:</label>
+            <select class="form-control"
+                    ng-model="statisticFilter.selectedStatisticsType"
+                    ng-init="statisticFilter.selectedStatisticsType = labelingStatisticEnum.General">
+                <option ng-repeat="option in statisticsTypes" value="{{option.type}}">{{option.name| translate}}</option>
+            </select>
+        </div>
+        <div class="col-md-2 col-sm-6" id="agent_selector">
+            <label>{{ 'AGENTS_LABEL' | translate }}:</label>
+            <ui-select multiple
+                       ng-model="statisticFilter.selectedAgents"
+                       theme="bootstrap"
+                       close-on-select="false"
+                       class="full-width">
+                <ui-select-match placeholder="{{ 'SELECT_AGENTS_PLACEHOLDER' | translate }}">
+                    <small ng-bind-html="$item.surname + ' ' + $item.givenName "></small>
+                    <div style="display:inline">
+                        <small> aka </small>
+                        <small ng-bind-html="$item.userName"></small>
+                    </div>
+                </ui-select-match>
+                <ui-select-choices refresh-delay="500" repeat="agent in agents" refresh="fetchAgents($select.search)">
+                    <small ng-bind-html="agent.surname + ' ' + agent.givenName "></small>
+                    <div style="display:inline">
+                        <small> aka </small>
+                        <small ng-bind-html="agent.userName"></small>
+                    </div>
+                </ui-select-choices>
+            </ui-select>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+            <label> {{ 'FROM_DATE_LABEL' | translate }}:</label>
+            <div class="input-group">
+                <input type="text" class="form-control full-width"
+                       uib-datepicker-popup="dd-MM-yyyy"
+                       is-open="startDatePopup.opened"
+                       readonly
+                       ng-model="statisticFilter.startTime"
+                       datepicker-options="startDateOptions" ng-change="changeMinEndTime()" />
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default calendar-button" ng-click="openStartDatePopup()"><i class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+            <label>{{ 'TO_DATE_LABEL' | translate }}:</label>
+            <div class="input-group">
+                <input type="text" class="form-control full-width"
+                       uib-datepicker-popup="dd-MM-yyyy"
+                       is-open="endDatePopup.opened"
+                       readonly
+                       ng-model="statisticFilter.endTime"
+                       datepicker-options="endDateOptions" ng-change="changeMaxStartTime()" />
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-default calendar-button" ng-click="openEndDatePopup()"><i class="glyphicon glyphicon-calendar"></i></button>
+                </span>
+            </div>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+            <label>&nbsp;</label>
+            <button type="button" class="btn btn-default btn-s full-width"
+                    ng-click="resetFilter()">
+                <span class="glyphicon glyphicon-erase"></span> {{'RESET_LABEL' | translate }}
+            </button>
+        </div>
+        <div class="col-lg-2 col-sm-6">
+            <label>&nbsp;</label>
+            <button type="button" class="btn btn-danger btn-s full-width"
+                    ng-click="generateReport()"
+                    ng-disabled="(statisticFilter.endTime == null ||
+                                                        statisticFilter.startTime == null)">
+                <span class="glyphicon glyphicon-floppy-save"></span> {{'GENERATE_REPORT_LABEL' | translate }}
+            </button>
+        </div>
+    </div>
+    <div class="panel-body">
+        <div class="ph-15" ng-if="pagination.totalItems!==0">
+            <div class="text-center">
+                <ul uib-pagination total-items="pagination.totalItems"
+                    items-per-page="pagination.itemsPerPage"
+                    ng-model="pagination.currentPage"
+                    ng-click="setPage()"
+                    max-size="pagination.maxVisiblePages"
+                    class="pagination-md"
+                    boundary-links="true"
+                    first-text="&laquo;"
+                    last-text="&raquo;"
+                    next-text="&rsaquo;"
+                    previous-text="&lsaquo;"></ul>
+            </div>
+            <table class="table" ng-if="selectedStatisticsType === labelingStatisticEnum.General">
+                <colgroup>
+                    <col style="background-color:lemonchiffon" span="2" />
+                    <col style="background-color:cornsilk" span="2" />
+                    <col style="background-color:beige" span="2" />
+                    <col style="background-color:antiquewhite"/>
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th colspan="2">
+                        </th>
+                        <th colspan="2" class="text-center">
+                            {{ 'TRANSCRIPTIONS_LABEL' | translate }}
+                        </th>
+                        <th colspan="2" class="text-center">
+                            {{ 'PREDICTIONS_LABEL' | translate }}
+                        </th>
+                        <th  rowspan="2" class="text-center cursor-pointer" style="vertical-align: middle !important;"
+                            ng-click="sortBy('processingWorkingTime')">
+                            {{ 'PROCESSING_WORKING_TIME_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'processingWorkingTime'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('date')">
+                            {{ 'DATE_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'date'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('agentName')">
+                            {{ 'AGENT_NAME_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'agentName'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('transcriptionsCount')">
+                            {{ 'COUNT_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'transcriptionsCount'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('transcriptionsWorkingTime')">
+                            {{ 'WORKING_TIME_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'transcriptionsWorkingTime'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('predictionsCount')">
+                            {{ 'COUNT_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'predictionsCount'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('predictionsWorkingTime')">
+                            {{ 'WORKING_TIME_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'predictionsWorkingTime'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center"> </td>
+                        <td class="text-center"> </td>
+                        <td class="text-center">{{ aggregatedStatistic.totalTranscriptionsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(aggregatedStatistic.totalTranscriptionsWorkingTime) }}</td>
+                        <td class="text-center">{{ aggregatedStatistic.totalPredictionsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(aggregatedStatistic.totalPredictionsWorkingTime) }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(aggregatedStatistic.totalProcessingWorkingTime) }}</td>
+                    </tr>
+                </tbody>
+                <tbody ng-repeat="statistic in paginatedStatistic">
+                    <tr>
+                        <td class="text-center">{{ statistic.date | date :  "dd.MM.yyyy"}}</td>
+                        <td class="text-center">{{ statistic.agentName }}</td>
+                        <td class="text-center">{{ statistic.transcriptionsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(statistic.transcriptionsWorkingTime) }}</td>
+                        <td class="text-center">{{ statistic.predictionsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(statistic.predictionsWorkingTime) }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(statistic.processingWorkingTime) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table" ng-if="selectedStatisticsType === labelingStatisticEnum.Transcription">
+                <colgroup>
+                    <col style="background-color:lemonchiffon" span="2"/>
+                    <col style="background-color:cornsilk" span="6" />
+                    <col style="background-color:beige" span="4" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th colspan="2">
+                        </th>
+                        <th colspan="6" class="text-center">
+                            {{ 'TRANSCRIPTIONS_LABEL' | translate }}
+                        </th>
+                        <th colspan="4" class="text-center">
+                            {{ 'VERIFICATIONS_LABEL' | translate }}
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('date')">
+                            {{ 'DATE_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'date'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('agentName')">
+                            {{ 'AGENT_NAME_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'agentName'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('transcriptionsCount')">
+                            {{ 'COUNT_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'transcriptionsCount'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('transcriptiosnWorkingTime')">
+                            {{ 'WORKING_TIME_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'transcriptionsWorkingTime'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('transcribedAudioLength')">
+                            {{ 'AUDIO_LENGTH_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'transcribedAudioLength'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('averageAudioLength')">
+                            {{ 'AVERAGE_AUDIO_LENGTH_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'averageAudioLength'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('averageWordErrorRate')">
+                            {{ 'ERROR_PERCENTAGE_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'averageWordErrorRate'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('transcriptionsProcessingScore')">
+                            {{ 'PROCESSING_SCORE_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'transcriptionsProcessingScore'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('verificationsCount')">
+                            {{ 'COUNT_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'verificationsCount'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('verificationsWorkingTime')">
+                            {{ 'WORKING_TIME_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'verificationsWorkingTime'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('verifiedAudiosLength')">
+                            {{ 'AUDIO_LENGTH_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'verifiedAudiosLength'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('verificationsProcessingScore')">
+                            {{ 'PROCESSING_SCORE_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'verificationsProcessingScore'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center"> </td>
+                        <td class="text-center"> </td>
+                        <td class="text-center">{{ aggregatedStatistic.totalTranscriptionsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(aggregatedStatistic.totalTranscriptionsWorkingTime) }}</td>
+                        <td class="text-center">{{ aggregatedStatistic.totalTranscribedAudioLength }}</td>
+                        <td class="text-center"> </td>
+                        <td class="text-center">{{ aggregatedStatistic.totalAverageWordErrorRate.toFixed(2) }}%</td>
+                        <td class="text-center">{{ aggregatedStatistic.totalTranscriptionsProcessingScore }}</td>
+                        <td class="text-center">{{ aggregatedStatistic.totalVerificationsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(aggregatedStatistic.totalVerificationsWorkingTime) }}</td>
+                        <td class="text-center">{{ aggregatedStatistic.totalVerifiedAudiosLength }}</td>
+                        <td class="text-center">{{ aggregatedStatistic.totalVerificationsProcessingScore }}</td>
+                    </tr>
+                </tbody>
+                <tbody ng-repeat="statistic in paginatedStatistic">
+                    <tr>
+                        <td class="text-center">{{ statistic.date | date :  "dd.MM.yyyy"}}</td>
+                        <td class="text-center">{{ statistic.agentName }}</td>
+                        <td class="text-center">{{ statistic.transcriptionsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(statistic.transcriptionsWorkingTime) }}</td>
+                        <td class="text-center">{{ statistic.transcribedAudioLength }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(statistic.averageAudioLength) }}</td>
+                        <td class="text-center">{{ statistic.averageWordErrorRate.toFixed(2) }}%</td>
+                        <td class="text-center">{{ statistic.transcriptionsProcessingScore }}</td>
+                        <td class="text-center">{{ statistic.verificationsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(statistic.verificationsWorkingTime) }}</td>
+                        <td class="text-center">{{ statistic.verifiedAudiosLength }}</td>
+                        <td class="text-center">{{ statistic.verificationsProcessingScore }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <table class="table" ng-if="selectedStatisticsType === labelingStatisticEnum.MomentsPrediction">
+                <colgroup>
+                    <col style="background-color:lemonchiffon" span="2" />
+                    <col style="background-color:cornsilk" span="3" />
+                    <col style="background-color:beige" span="3" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th colspan="2">
+                        </th>
+                        <th colspan="3" class="text-center">
+                            {{ 'PREDICTIONS_LABEL' | translate }}
+                        </th>
+                        <th colspan="3" class="text-center">
+                            {{ 'VERIFICATIONS_LABEL' | translate }}
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('date')">
+                            {{ 'DATE_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'date'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('agentName')">
+                            {{ 'AGENT_NAME_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'agentName'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('predictionsCount')">
+                            {{ 'COUNT_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'predictionsCount'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('predictionsWorkingTime')">
+                            {{ 'WORKING_TIME_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'predictionsWorkingTime'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('predictionsProcessingScore')">
+                            {{ 'PROCESSING_SCORE_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'predictionsProcessingScore'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('verificationsCount')">
+                            {{ 'COUNT_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'verificationsCount'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('verificationsWorkingTime')">
+                            {{ 'WORKING_TIME_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'verificationsWorkingTime'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('verificationsProcessingScore')">
+                            {{ 'PROCESSING_SCORE_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'verificationsProcessingScore'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center"> </td>
+                        <td class="text-center"> </td>
+                        <td class="text-center">{{ aggregatedStatistic.totalPredictionsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(aggregatedStatistic.totalPredictionsWorkingTime) }}</td>
+                        <td class="text-center">{{ aggregatedStatistic.totalPredictionsProcessingScore }}</td>
+                        <td class="text-center">{{ aggregatedStatistic.totalVerificationsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(aggregatedStatistic.totalVerificationsWorkingTime) }}</td>
+                        <td class="text-center">{{ aggregatedStatistic.totalVeriricationsProcessingScore }}</td>
+                    </tr>
+                </tbody>
+                <tbody ng-repeat="statistic in paginatedStatistic">
+                    <tr>
+                        <td class="text-center">{{ statistic.date | date :  "dd.MM.yyyy"}}</td>
+                        <td class="text-center">{{ statistic.agentName }}</td>
+                        <td class="text-center">{{ statistic.predictionsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(statistic.predictionsWorkingTime) }}</td>
+                        <td class="text-center">{{ statistic.predictionsProcessingScore }}</td>
+                        <td class="text-center">{{ statistic.verificationsCount }}</td>
+                        <td class="text-center">{{ intervalWithoutMilliseconds(statistic.verificationsWorkingTime) }}</td>
+                        <td class="text-center">{{ statistic.verificationsProcessingScore }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="col-md-12 ph-0">
+                <button type="button" class="btn btn-success full-width"
+                        ng-csv="statisticToFile"
+                        csv-header="getCsvHeader()"
+                        csv-column-order="getCsvColumnOrder()"
+                        field-separator=";"
+                        filename="{{csvFileName}}.csv">
+                    {{ 'SAVE_STATISTIC_LABEL' | translate }}
+                </button>
+            </div>
+            <div class="text-center">
+                <ul uib-pagination total-items="pagination.totalItems"
+                    items-per-page="pagination.itemsPerPage"
+                    ng-model="pagination.currentPage"
+                    ng-click="setPage()"
+                    max-size="pagination.maxVisiblePages"
+                    class="pagination-md"
+                    boundary-links="true"
+                    first-text="&laquo;"
+                    last-text="&raquo;"
+                    next-text="&rsaquo;"
+                    previous-text="&lsaquo;"></ul>
+            </div>
+        </div>
+    </div>
+</div>

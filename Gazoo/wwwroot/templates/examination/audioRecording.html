@@ -1,0 +1,78 @@
+﻿<div class="panel panel-danger" cg-busy="[uploadAudioFilesPromise]">
+    <div class="panel-body">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h3 class="panel-title" style="text-align:center">
+                    {{ 'RECORD_TOOL_LABEL' | translate }}
+                </h3>
+            </div>
+            <div class="panel-body" cg-busy="[analyzingFilePromise]">
+                <div class="controls text-center recordingDiv" style="text-align: center">
+                    <button ng-click="!isRecording ? startRecorderingTemp() : stopRecorderingTemp()" type="button" class="btn" ng-class="{'btn-primary': !isRecording, 'btn-danger': isRecording}">
+                        <i class="glyphicon glyphicon-record"></i> {{ isRecording ? 'STOP_LABEL' : 'START_LABEL' | translate }}
+                        <timer ng-if="isRecording" interval="1000">{{mminutes}}:{{sseconds}}</timer>
+                    </button>
+                    <div class="inline-form" style="display:inline-block; margin-left: 2em;" ng-show="!isRecording && recordedInput!==null">
+                        <button class="btn btn-success btn-block" ng-click="wavesurfer.playPause();">
+                            <span id="play" ng-show="paused">
+                                <i class="glyphicon glyphicon-play"></i>
+                                {{ 'PLAY_BUTTON_LABEL' | translate }}
+                            </span>
+                            <span id="pause" ng-show="!paused">
+                                <i class="glyphicon glyphicon-pause"></i>
+                                {{ 'PAUSE_BUTTON_LABEL' | translate }}
+                            </span>
+                        </button>
+                    </div>
+                </div>
+                <div class="panels" canvas-sizer>
+                    <div class="row" style="margin: 30px 0" ng-show="false">
+                        <div class="col-sm-9">
+                            <ng-wavesurfer url="{{recordedInput}}"
+                                           wave-color="#337ab7"
+                                           progress-color="#23527c"
+                                           height="64">
+                            </ng-wavesurfer>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div ng-form name="fileInfo">
+                <div class="col-lg-4 col-md-6 mt-5 mb-5">
+                    <label class="text-center" style="width:100%">{{ 'FILE_NAME_LABEL' | translate }}</label>
+                    <input type="text"
+                           name="fileName"
+                           minlength="3"
+                           maxlength="50"
+                           ng-pattern="/^[a-zA-Zа-яА-Я0-9\s]+$/"
+                           required
+                           class="form-control"
+                           style="max-width: none"
+                           placeholder="{{ 'FILE_NAME_PLACEHOLDER' | translate }}"
+                           ng-model-options="{debounce:500}"
+                           ng-model="audioFileInfo.fileName"
+                           ng-change="validateAudioFileInfo()" />
+                </div>
+                <div class="col-lg-4 col-md-6 mt-5 mb-5">
+                    <label class="text-center" style="width:100%">{{ 'COMMENT_LABEL' | translate }}</label>
+                    <input type="text"
+                           name="commentInput"
+                           class="form-control"
+                           maxlength="128"
+                           ng-model="audioFileInfo.comment"
+                           placeholder="{{ 'COMMENT_PLACEHOLDER' | translate }}" />
+                </div>
+                <div class="col-lg-4 col-md-12 mt-5 mb-5">
+                    <label class="text-center" style="width:100%">&nbsp;</label>
+                    <button ng-click="confirmSaveAudioMessage()"
+                            ng-disabled="fileInfo.$invalid || isFileExistsOnServer || blockWhileCheking || !recordedInput || !canSave || isRecording" class="btn btn-success inline-form" type="submit" value="" style="width:100%">
+                        <i class="fa fa-cloud-upload" aria-hidden="true"></i>
+                        {{ 'SAVE_AUDIO_MESSAGE' | translate}}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

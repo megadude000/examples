@@ -1,0 +1,45 @@
+﻿<div class="loading-spinner-container"
+     ng-show="!pageIsReady">
+    <div class="loading-spinner"></div>
+</div>
+<div data-ng-init="initialize();"
+     ng-show="pageIsReady">
+    <div class="panel-body">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>{{'AGENT_ID_LABEL' | translate}}</th>
+                    <th>{{'AGENT_NAME_LABEL' | translate}}</th>
+                    <th>{{'PHONE_NUMBER_LABEL' | translate}}</th>
+                    <th>{{'BUSINESS_RESULTS_LABEL' | translate}}</th>
+                    <th>{{'START_TIME_LABEL' | translate}}</th>
+                    <th>{{'DURATION_LABEL' | translate}}</th>
+                    <th>{{'SYNC_STATE_LABEL' | translate}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ call.info.agentId }}</td>
+                    <td>{{ call.info.agentName }}</td>
+                    <td>{{ call.info.phoneNumber }}</td>
+                    <td>{{ call.info.businessResultName }}</td>
+                    <td>{{ call.info.startTimeFormat }}</td>
+                    <td>{{ call.info.durationFormat }}</td>
+                    <td>
+                        <span class="label"
+                              ng-class="{
+                                    'label-success': call.info.status === callAudioStatus.Synced,
+                                    'label-default': call.info.status === callAudioStatus.Unsynced || call.info.status === callAudioStatus.Archived,
+                                    'label-danger': call.info.status === callAudioStatus.NotAvailable
+                                  }">
+                            {{ getCallAudioStatus(call.info.status) }}
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="row" ng-style="{'visibility': call.info.status === callAudioStatus.Synced ? 'visible' : 'hidden'}">
+            <recording-wave class="col-md-12" ng-if="callReady" on-component-loaded="setPageIsReady()" label-groups="labelGroups" call="call" />
+        </div>
+    </div>
+</div>

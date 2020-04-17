@@ -1,0 +1,64 @@
+﻿<div class="panel panel-danger" data-ng-init="initialize()" cg-busy="[getLabelGroupsPromise, labelGroupPromise, labelPromise]">
+    <div class="panel-heading">
+        <h3 class="panel-title" style="text-align:center">
+            {{ 'LABELS_CREATION_TOOL_LABEL' | translate }}
+        </h3>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <button type="button" class="btn btn-success btn-s" style="width:100%" ng-click="addGroup()">
+                            <span class="glyphicon glyphicon-plus"></span> {{ 'ADD_LABEL' | translate }}
+                        </button>
+                    </div>
+                    <div class="panel-body">
+                        <ul class="nav nav-pills nav-stacked conversation-transcription" ng-repeat="group in labelGroups">
+                            <li ng-class="groupId == group.id ? 'active' : ''" style="margin-top:0.3em" id="#{{group.id}}">
+                                <a data-toggle="pill" class="pill-main" ng-click="setGroup(group.id)">{{ group.name }}</a>
+                                <a class="pill-edit text-center" ng-click="editGroup(group)"><span class="glyphicon glyphicon-edit"></span>&nbsp;</a>
+                                <a class="pill-delete text-center" ng-click="deleteGroup(group)"><span class="glyphicon glyphicon-trash"></span>&nbsp;</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div ng-if="groupId" id="#{{groupId}}" class="tab-content">
+                    <div class="tab-pane active" role="tabpanel">
+                        <div class="panel panel-info">
+                            <div class="panel-heading text-center">
+                                <button ng-if="canAddOpiton(groupId)" type="button" class="btn btn-success btn-s" ng-click="addLabel()">
+                                    <span class="glyphicon glyphicon-plus"></span> {{ 'ADD_LABEL' | translate }}
+                                </button>
+                                <span ng-if="!canAddOpiton(groupId)" class="text-info"> {{ 'NO_POSSIBILITY_TO_ADD_OPTIONS_INFO' | translate }} </span>
+                            </div>
+                            <div class="panel-body" ng-if="labels.length != 0">
+                                <ul class="list-group" ng-repeat="label in labels">
+                                    <li class="list-group-item ">
+                                        <div class="row">
+                                            <div class="col-lg-10 col-md-10 col-sm-8">
+                                                {{label.name}}
+                                            </div>
+                                            <div ng-if="canAddOpiton(groupId)" class="col-lg-1 col-md-1 col-sm-2">
+                                                <button type="button" class="btn btn-warning btn-s" ng-click="editLabel(label)">
+                                                    <span class="glyphicon glyphicon-edit"></span>
+                                                </button>
+                                            </div>
+                                            <div ng-if="canAddOpiton(groupId)" class="col-lg-1 col-md-1 col-sm-2">
+                                                <button type="button" class="btn btn-danger btn-s" ng-click="deleteLabel(label)">
+                                                    <span class="glyphicon glyphicon-trash"></span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

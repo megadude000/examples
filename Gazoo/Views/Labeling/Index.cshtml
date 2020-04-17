@@ -1,0 +1,98 @@
+@using Company.Common.AspNet.Localization
+@using Company.Gazoo.Extensions
+
+@inject ILocalizationService Localization
+@{
+    ViewBag.Title = Localization.Localizer.LabelingMenuItem;
+}
+@section Styles {
+    <environment names="Development">
+        <link rel="stylesheet" href="~/css/spacing.css" />
+        <link rel="stylesheet" href="~/css/labeling.css" />
+        <link rel="stylesheet" href="~/lib/jasny-bootstrap/css/jasny-bootstrap.css" />
+        <link rel="stylesheet" href="~/lib/angular-bootstrap-toggle-switch/dist/css/bootstrap3/bootstrap-switch.css" />
+        <link rel="stylesheet" href="~/lib/angular-ui-select/select.css" />
+    </environment>
+
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="~/lib/angular-ui-select/select.min.css" />
+        <link rel="stylesheet" href="~/lib/angular-bootstrap-toggle-switch/dist/css/bootstrap3/bootstrap-switch.min.css" />
+    </environment>
+}
+@section Scripts {
+    <environment names="Development">
+        <script src="~/js/labeling/components/Company.gazoo.labeling.transcription.component.js"></script>
+        <script src="~/js/labeling/components/Company.gazoo.labeling.recording.panel.component.js"></script>
+        <script src="~/js/labeling/components/Company.gazoo.labeling.recording.wave.component.js"></script>
+        <script src="~/js/labeling/components/Company.gazoo.labeling.recording.label.element.component.js"></script>
+        <script src="~/js/labeling/components/Company.gazoo.labeling.recording.labeling.component.js"></script>
+        <script src="~/js/labeling/components/Company.gazoo.labeling.fc.moment.next.ams.prediction.component.js"></script>
+        <script src="~/js/labeling/components/Company.gazoo.labeling.transcription.audio.uploader.component.js"></script>
+        <script src="~/js/labeling/components/Company.gazoo.labeling.fc.moment.audio.uploader.component.js"></script>
+        <script src="~/js/labeling/components/Company.gazoo.labeling.report.generator.component.js"></script>
+        <script src="~/js/labeling/components/Company.gazoo.labeling.labels.creation.tool.component.js"></script>
+        <script src="~/js/labeling/components/Company.gazoo.labeling.import.statistics.component.js"></script>
+
+        <script src="~/js/labeling/controllers/Company.gazoo.labeling.label.modal.controller.js"></script>
+        <script src="~/js/labeling/controllers/Company.gazoo.labeling.label.group.modal.controller.js"></script>
+        <script src="~/js/labeling/controllers/Company.gazoo.labeling.module.controller.js"></script>
+        <script src="~/js/labeling/controllers/Company.gazoo.labeling.master.actions.controller.js"></script>
+        <script src="~/js/labeling/controllers/Company.gazoo.labeling.audio.uploader.controller.js"></script>
+        <script src="~/js/labeling/controllers/Company.gazoo.labeling.import.modal.controller.js"></script>
+
+        <script src="~/js/labeling/services/Company.gazoo.labeling.transcription.http.service.js"></script>
+        <script src="~/js/labeling/services/Company.gazoo.labeling.fc.moment.http.service.js"></script>
+        <script src="~/js/labeling/services/Company.gazoo.recording.labeling.service.js"></script>
+        <script src="~/js/labeling/services/Company.gazoo.labeling.elapsed.time.service.js"></script>
+        <script src="~/js/labeling/directives/Company.gazoo.labeling.labels.directive.js"></script>
+
+        <script src="~/js/shared/services/Company.gazoo.recording.shared.service.js"></script>
+        <script src="~/js/shared/common/Company.gazoo.promise.common.js"></script>
+        <script src="~/js/shared/files/soundtouch.js"></script>
+        <script src="~/js/shared/common/Company.gazoo.ng.dropdown.miltiselect.disabled.js"></script>
+        <script src="~/lib/angular-drag-and-drop-lists/angular-drag-and-drop-lists.js"></script>
+        <script src="~/lib/wavesurfer.js/wavesurfer.js"></script>
+        <script src="~/lib/wavesurfer.js/plugin/wavesurfer.regions.min.js"></script>
+        <script src="~/lib/wavesurfer.js/plugin/wavesurfer.cursor.min.js"></script>
+        <script src="~/lib/angular-bootstrap-toggle-switch/dist/js/bootstrap-switch.js"></script>
+        <script src="~/lib/angular-file-upload/angular-file-upload.js"></script>
+        <script src="~/lib/angular-hotkeys/hotkeys.js"></script>
+
+    </environment>
+    <environment names="Staging,Production">
+        <script src="~/lib/wavesurfer.js/wavesurfer.min.js"></script>
+        <script src="~/lib/wavesurfer.js/plugin/wavesurfer.regions.min.js"></script>
+        <script src="~/lib/wavesurfer.js/plugin/wavesurfer.cursor.min.js"></script>
+        <script src="~/lib/angular-drag-and-drop-lists/angular-drag-and-drop-lists.min.js"></script>
+        <script src="~/lib/angular-bootstrap-toggle-switch/dist/js/bootstrap-switch.min.js"></script>
+        <script src="~/lib/angular-file-upload/angular-file-upload.min.js"></script>
+        <script src="~/lib/angular-hotkeys/hotkeys.min.js"></script>
+    </environment>
+}
+<div ng-app="Company.gazoo.labeling" ng-cloak>
+    <toaster-container></toaster-container>
+    <div class="audio-manager" cg-busy="[checkIfFileExistOnServerPromise, uploadAudioFilesPromise]" 
+         ng-controller="labelingModuleController">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <ul class="nav nav-tabs nav-justified">
+                <li class="nav-item" ng-class="{'active':$state.current.name === 'transcription'}" required-claim="ConversationTranscriber">
+                    <a data-toggle="pill" href="" ng-click="goToTranscriptionTab();"><strong>{{ 'TRANSCRIPTION_TAB' | translate}}</strong></a>
+                </li>
+                <li class="nav-item" ng-class="{'active':$state.current.name === 'recordingLabeling'}" required-claim="RecordingLabeling">
+                    <a data-toggle="pill" href="" ng-click="goToRecordingLabelingTab();"><strong>{{ 'RECORDING_LABEL' | translate}}</strong></a>
+                </li>
+                <li class="nav-item" ng-class="{'active':$state.current.name === 'nextAmsPrediction'}" required-claim="ConversationNextAmsPredictor">
+                    <a data-toggle="pill" href="" ng-click="goToNextAmsPredictionab();"><strong>{{ 'NEXT_AMS_PREDICTION_LABEL' | translate}}</strong></a>
+                </li>
+                <li class="nav-item" ng-class="{'active':$state.current.name.indexOf('masterActionsModule') != -1}" required-claim="ConversationTranscriptionMaster">
+                    <a data-toggle="pill" href="" ng-click="goToMasterActionsModuleTab();"><strong>{{ 'ACTIONS_LABEL' | translate}}</strong></a>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="tab-content">
+                <ui-view></ui-view>
+            </div>
+        </div>
+    </div>
+</div>

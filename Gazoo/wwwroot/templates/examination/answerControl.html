@@ -1,0 +1,44 @@
+﻿<div class="panel panel-default" ng-init="initialize()" cg-busy="[checkAnswerExistspromise, checkIsAnswerUsingPromise, deleteAnswerPromise, fetchAnswersPromise]">
+    <div class="panel-heading text-center">{{getHeaderLabel()}}</div>
+    <div class="input-group" ng-form name="answerForm" id="inputForm">
+        <input type="text" 
+               name="answerValue"
+               class="form-control"
+               ng-model="answerValue"
+               ng-change="answerValueChanged(answerValue)"
+               ng-maxlength="50"
+               placeholder="{{getInputPlaceholderLabel()}}">
+        <span class="input-group-btn">
+            <button class="btn btn-success"
+                    type="button"
+                    ng-click="addAnswer(answerValue)"
+                    ng-disabled="answerForm.$invalid || answerForm.$pristine || !answerValue">
+                {{'ADD_LABEL' | translate}}
+            </button>
+        </span>
+    </div>
+    <div class="text-center" ng-show="pagination.totalItems > 25">
+        <ul uib-pagination total-items="pagination.totalItems"
+            items-per-page="pagination.itemsPerPage"
+            ng-model="pagination.currentPage"
+            ng-click="setPage()"
+            max-size="pagination.maxVisiblePages"
+            boundary-links="true"
+            first-text="&laquo;"
+            last-text="&raquo;"
+            next-text="&rsaquo;"
+            previous-text="&lsaquo;"></ul>
+    </div>
+    <table class="table table-sm table-striped">
+        <tbody>
+            <tr ng-repeat="answer in paginatedAnswers">
+                <th class="text-center">{{answer.name}}</th>
+                <th class="text-center" width="10%">
+                    <button class="btn btn-danger btn-sm" ng-click="confirmDeleteAnswerValue(answer.id); $event.stopPropagation();">
+                        <span class="glyphicon glyphicon-trash" />
+                    </button>
+                </th>
+            </tr>
+        </tbody>
+    </table>
+</div>

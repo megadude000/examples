@@ -1,0 +1,149 @@
+﻿<div data-ng-init="initialize();">
+    <div class="row">
+        <div class="col-md-12">
+            <div id="clientWaveAudioPlayer"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div id="agentWaveAudioPlayer"></div>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 15px">
+        <div class="col-md-5 text-left">{{'PLAYBACK_SPEED' | translate}}: {{ playbackRate * 100 | number : 0}}%</div>
+        <div class="col-md-2 text-center">
+            <i ng-click="playPauseToggle()" ng-class="call.agentChannel.playing ? 'glyphicon glyphicon-pause text-info' : 'glyphicon glyphicon-play text-info'" style="font-size:35px"></i>
+            <i ng-click="stopButton()" class="glyphicon glyphicon-stop text-info text-center" style="font-size:35px; margin: 0px 3px 0px 3px"></i>
+            <span style="font-size:20px">{{ call.agentChannel.currentTime }}</span>
+        </div>
+        <div class="col-md-5 text-right">
+            <span>{{'CLIENT_CHANNEL_OPTIONS_LABEL' | translate}}</span>
+            <a href="{{call.clientChannel.audioFileLink}}" download="{{fileNameForSave(call.clientChannel.type)}}" class="glyphicon glyphicon-download-alt text-info" style="font-size:25px"></a>
+            <span ng-click="muteChannel(call.clientChannel.type)" style="font-size:25px" ng-class="call.clientChannel.muted ? 'glyphicon glyphicon-volume-off text-info' : 'glyphicon glyphicon-volume-up text-info'"></span>
+            <span>{{'AGENT_CHANNEL_OPTIONS_LABEL' | translate}}</span>
+            <a href="{{call.agentChannel.audioFileLink}}" download="{{fileNameForSave(call.agentChannel.type)}}" class="glyphicon glyphicon-download-alt text-info" style="font-size:25px"></a>
+            <span ng-click="muteChannel(call.agentChannel.type)" style="font-size:25px" ng-class="call.agentChannel.muted ? 'glyphicon glyphicon-volume-off text-info' : 'glyphicon glyphicon-volume-up text-info'"></span>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 50px">
+        <div class="col-md-5"
+             ng-show="call.agentChannel.logs.length > 0">
+            <table class="table table-bordered table-fit" style="width: auto;">
+                <thead style="background-color:lightgray">
+                    <tr>
+                        <th> {{'START' | translate}} </th>
+                        <th> {{'END' | translate}} </th>
+                        <th> {{'AGENTS_TYPE_LABEL' | translate}} </th>
+                        <th> {{'PLAYED_RECORDING_LABEL' | translate}} </th>
+                        <th> {{'AUDIOMESSAGE_NAME_LABEL' | translate}} </th>
+                        <th> </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="log in call.agentChannel.logs | orderBy:'-startTime':true" ng-class="call.agentChannel.currentLog.indexOf(log.id) !== -1 ? 'bg-info' : ''">
+                        <td> <a href="" ng-click="seekToSecond(log.startTime)"> {{ log.startTimeFormat }} </a> </td>
+                        <td> <a href="" ng-click="seekToSecond(log.endTime)"> {{ log.endTimeFormat }} </a> </td>
+                        <td> {{ log.isBotAgent ? 'BOT' : 'AGENT' | translate }} </td>
+                        <td> {{ log.audioCompleteness }}% </td>
+                        <td> {{ log.audioName }} </td>
+                        <td> <i class="glyphicon glyphicon-repeat text-info text-center" style="font-size:25px" ng-click="playRegion(log.id, call.agentChannel.type)"></i> </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-7"
+             ng-show="call.clientChannel.logs.length > 0">
+            <table class="table table-bordered table-fit" style="width: 100%;">
+                <thead style="background-color:lightgray">
+                    <tr>
+                        <th> {{'START' | translate}} </th>
+                        <th> {{'END' | translate}} </th>
+                        <th ng-repeat="label in labels">{{label.name}}</th>
+                        <th> </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="log in call.clientChannel.logs | orderBy:'-startTime':true"
+                        ng-class="call.clientChannel.currentLog.indexOf(log.id) !== -1 ? 'text-center bg-info' : 'text-center'">
+                        <td> <a href="" ng-click="seekToSecond(log.startTime)"> {{ log.startTimeFormat }} </a> </td>
+                        <td> <a href="" ng-click="seekToSecond(log.endTime)"> {{ log.endTimeFormat }} </a> </td>
+                        <td ng-repeat="label in labels">
+                            <label-element label-group="label" log="log" on-change="onChange(logId, labelGroupId, values)" />
+                        </td>
+                        <td>
+                            <i class="glyphicon glyphicon-repeat text-info text-center" style="font-size:25px" ng-click="playRegion(log.id, call.clientChannel.type)"></i>
+                            <i class="glyphicon glyphicon-trash text-danger text-center" style="font-size:25px" ng-click="deleteRegion(log.id)"></i>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="btn btn-success"
+                    ng-click="saveTranscription()">
+                {{'SAVE_BUTTON' | translate}}
+            </button>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 50px">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h4 class="panel-title" data-toggle="collapse" href="#shortcutPanel" ng-click="collapse = !collapse">
+                    <i ng-class="collapse ? 'glyphicon glyphicon-chevron-up' : 'glyphicon glyphicon-chevron-down'"></i>
+                    {{'SHORTCUTS_LABEL' | translate}}
+                </h4>
+            </div>
+            <div id="shortcutPanel" class="panel-collapse collapse">
+                <div class="panel-body">
+                    <table class="table table-bordered table-fit">
+                        <thead>
+                            <tr>
+                                <th> {{'HOTKEY_LABEL' | translate}} </th>
+                                <th> {{'ACTION' | translate}} </th>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{'SPACE_KEY' | translate}}</td>
+                                <td>{{'TOGGLE_PLAY_ACTION' | translate}}</td>
+                            </tr>
+                            <tr>
+                                <td>{{'ENTER_KEY' | translate}}</td>
+                                <td>{{'STOP_AUDIO_ACTION' | translate}}</td>
+                            </tr>
+                            <tr>
+                                <td>{{'ARROW_UP_KEY' | translate}}</td>
+                                <td>{{'SPEED_UP_AUDIO_ACTION' | translate}}</td>
+                            </tr>
+                            <tr>
+                                <td>{{'ARROW_DOWN_KEY' | translate}}</td>
+                                <td>{{'SLOW_DOWN_AUDIO_ACTION' | translate}}</td>
+                            </tr>
+                            <tr>
+                                <td>{{'CTRL_KEY' | translate}} + {{'ARROW_UP_KEY' | translate}}</td>
+                                <td>{{'MUTE_CLIENT_AUDIO_ACTION' | translate}}</td>
+                            </tr>
+                            <tr>
+                                <td>{{'CTRL_KEY' | translate}} + {{'ARROW_DOWN_KEY' | translate}}</td>
+                                <td>{{'MUTE_AGENT_AUDIO_ACTION' | translate}}</td>
+                            </tr>
+                            <tr>
+                                <td>{{'ARROW_LEFT_KEY' | translate}}</td>
+                                <td>{{'SKIP_BACKWARD_ACTION' | translate}}</td>
+                            </tr>
+                            <tr>
+                                <td>{{'ARROW_RIGHT_KEY' | translate}}</td>
+                                <td>{{'SKIP_FORWARD_ACTION' | translate}}</td>
+                            </tr>
+                            <tr>
+                                <td>{{'DELETE_KEY' | translate}}</td>
+                                <td>{{'DELETE_REGIONS_ACTION' | translate}}</td>
+                            </tr>
+                            <tr>
+                                <td>{{'CTRL_KEY' | translate}} + S</td>
+                                <td>{{'SAVE_STATE_ACTION' | translate}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

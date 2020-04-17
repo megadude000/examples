@@ -1,0 +1,40 @@
+﻿<form name="answerSetForm" novalidate>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title text-center">{{title}}</h3>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <label class="full-width">{{ 'NAME_LABEL' | translate }}</label>
+                        <input class="form-control" 
+                               name="answerSetName" 
+                               ng-change="nameChanged()" 
+                               ng-model-options="{debounce:500}"
+                               ng-model="answerSetModel.name" ng-minlength="3" ng-maxlength="30" autofocus required>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <div class="row">
+                <div class="col-md-1 ">
+                    <button class="btn btn-primary"
+                            type="submit"
+                            ng-click="save(answerSetForm)"
+                            ng-disabled="answerSetForm.$invalid || answerSetForm.$pristine || initialAnswerSetModel.name == answerSetModel.name">
+                        <span class="glyphicon glyphicon-floppy-save" />
+                    </button>
+                </div>
+                <div class="col-md-offset-11">
+                    <button class="btn btn-default"
+                            type="button"
+                            ng-click="cancel()">
+                        <span class="glyphicon glyphicon-ban-circle" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

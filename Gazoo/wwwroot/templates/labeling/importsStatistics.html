@@ -1,0 +1,198 @@
+﻿<div class="panel panel-danger conversation-transcription" data-ng-init="initialize()" cg-busy="[getCampaignInstancePairingPromise, resetRecordsVerificationPromise, getImportStatisticsReportPromise, updateImportPromise, getImportFileNamesPromise]">
+    <div class="panel-heading">
+        <h3 class="panel-title" style="text-align:center">
+            {{ 'IMPORT_STATISCTICS_LABEL' | translate }}
+        </h3>
+    </div>
+    <div class="panel-body">
+        <div class="col-md-3 col-sm-6">
+            <label class="full-width text-center">{{ 'IMPORT_TYPE_LABEL' | translate }}</label>
+            <div class="full-width"
+                 ng-dropdown-multiselect=""
+                 options="importTypes"
+                 selected-model="selectedImportTypes"
+                 extra-settings="importTypeSelectSettings">
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6"  ng-show="transcriptionSelected()">
+            <label class="full-width text-center">{{ 'INSTANCE_ID_LABEL' | translate }}</label>
+            <div style="display: flex;">
+                <select class="form-control"
+                        style="flex-grow: 1;"
+                        ng-model="selectedInstance"
+                        ng-change="instanceSelectionChanged()"
+                        ng-options="instance for instance in instances">
+                </select>
+                <button class="btn btn-danger" ng-click="refreshInstanceSelection()" ng-disabled="selectedInstance == null">
+                    <span class="glyphicon glyphicon-refresh" />
+                </button>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6" ng-show="transcriptionSelected()">
+            <label class="full-width text-center">{{ 'CAMPAIGN_ID_LABEL' | translate }}</label>
+            <div class="full-width"
+                 ng-dropdown-multiselect=""
+                 options="campaigns"
+                 selected-model="selectedCampaigns"
+                 ng-dropdown-multiselect-disabled="isCampaingsSelectorDisabled()"
+                 extra-settings="campaignSelectSettings">
+            </div>
+        </div>
+        <div class="col-md-6 col-sm-0" ng-show="!transcriptionSelected()">
+
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <label style="display:block">&nbsp;</label>
+            <button type="button" class="btn btn-danger btn-s full-width"
+                    ng-click="getImportsInformation()">
+                <span class="glyphicon glyphicon-download"></span> {{ 'GENERATE_REPORT_LABEL' | translate }}
+            </button>
+        </div>
+    </div>
+    <div class="panel-body">
+        <div class="ph-15" ng-if="pagination.totalItems!==0">
+            <div class="text-center">
+                <ul uib-pagination total-items="pagination.totalItems"
+                    items-per-page="pagination.itemsPerPage"
+                    ng-model="pagination.currentPage"
+                    ng-click="setPage()"
+                    max-size="pagination.maxVisiblePages"
+                    class="pagination-md"
+                    boundary-links="true"
+                    first-text="&laquo;"
+                    last-text="&raquo;"
+                    next-text="&rsaquo;"
+                    previous-text="&lsaquo;"></ul>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('id')">
+                            {{ 'IMPORT_NUMBER_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'id'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('importType')">
+                            {{ 'IMPORT_TYPE_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'importType'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('instanceId')">
+                            {{ 'INSTANCE_ID_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'instanceId'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('campaignId')">
+                            {{ 'CAMPAIGN_ID_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'campaignId'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('uploadedRecords')">
+                            {{ 'UPLOADED_RECORDS_COUNT_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'uploadedRecords'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('unprocessedRecords')">
+                            {{ 'UNPROCESSED_RECORDS_COUNT_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'unprocessedRecords'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('processedRecords')">
+                            {{ 'PROCESSED_RECORDS_COUNT_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'processedRecords'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('verifiedRecords')">
+                            {{ 'VERIFIED_RECORDS_COUNT_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'verifiedRecords'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('priority')">
+                            {{ 'IMPORT_PRIORITY_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'priority'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center cursor-pointer"
+                            ng-click="sortBy('comment')">
+                            {{ 'IMPORT_COMMENT_LABEL' | translate }}
+                            <span class="sortorder" ng-show="propertyName === 'comment'" ng-class="{reverse: reverse}"></span>
+                        </th>
+                        <th class="text-center">
+                            {{ 'ACTIONS_LABEL' | translate }}
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="text-center"> </td>
+                        <td class="text-center"> </td>
+                        <td class="text-center"> </td>
+                        <td class="text-center"> </td>
+                        <td class="text-center">{{ aggregatedReport.totalUploadedRecords }}</td>
+                        <td class="text-center">{{ aggregatedReport.totalUnprocessedRecords }}</td>
+                        <td class="text-center">{{ aggregatedReport.totalProcessedRecords }}</td>
+                        <td class="text-center">{{ aggregatedReport.totalVerifiedRecords }}</td>
+                        <td class="text-center"> </td>
+                        <td class="text-center"> </td>
+                        <td class="text-center"> </td>
+                        <td class="text-center"> </td>
+                    </tr>
+                </tbody>
+                <tbody ng-repeat="import in paginatedImportStatistics">
+                    <tr>
+                        <td class="text-center">{{ import.id }}</td>
+                        <td class="text-center">
+                            <span class="label text-center" ng-class="import.importType == LabelingType.Transcription ? 'label-success' : 'label-warning'">
+                                {{ getTypeAsString(import.importType) | translate }}
+                            </span>
+                        </td>
+                        <td class="text-center">{{ import.instanceId }}</td>
+                        <td class="text-center">{{ import.campaignId }}</td>
+                        <td class="text-center">{{ import.uploadedRecords }}</td>
+                        <td class="text-center">{{ import.unprocessedRecords  }}</td>
+                        <td class="text-center">{{ import.processedRecords }}</td>
+                        <td class="text-center">{{ import.verifiedRecords }}</td>
+                        <td class="text-center">{{ import.priority }}</td>
+                        <td class="text-center">{{ import.comment  }}</td>
+                        <td class="text-center" style="white-space: nowrap;">
+                            <div class="row">
+                                <button class="btn btn-warning" ng-click="editImport(import); $event.stopPropagation();">
+                                    <span class="glyphicon glyphicon-edit" />
+                                </button>
+                                <button class="btn btn-info" ng-click="getImportFileNames(import); $event.stopPropagation();">
+                                    <span class="glyphicon glyphicon-download" />
+                                </button>
+                                <button class="btn btn-danger" ng-click="resetRecordsVerification(import); $event.stopPropagation();" ng-disabled="import.verifiedRecords == 0">
+                                    <span class="glyphicon glyphicon-refresh" />
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="col-md-12 ph-0">
+                <button type="button" class="btn btn-success full-width"
+                        ng-csv="importStatisticsToFile"
+                        csv-header="getCsvHeader()"
+                        csv-column-order="['id', 'importType', 'instanceId', 'campaignId', 'uploadedRecords', 'unprocessedRecords', 'processedRecords', 'verifiedRecords', 'priority', 'comment']"
+                        field-separator=";"
+                        filename="{{csvFileName}}.csv">
+                    {{ 'SAVE_STATISTIC_LABEL' | translate }}
+                </button>
+            </div>
+            <div class="text-center">
+                <ul uib-pagination total-items="pagination.totalItems"
+                    items-per-page="pagination.itemsPerPage"
+                    ng-model="pagination.currentPage"
+                    ng-click="setPage()"
+                    max-size="pagination.maxVisiblePages"
+                    class="pagination-md"
+                    boundary-links="true"
+                    first-text="&laquo;"
+                    last-text="&raquo;"
+                    next-text="&rsaquo;"
+                    previous-text="&lsaquo;"></ul>
+            </div>
+        </div>
+    </div>
+</div>

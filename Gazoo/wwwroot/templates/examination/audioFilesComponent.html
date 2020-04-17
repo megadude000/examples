@@ -1,0 +1,20 @@
+﻿<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <ul class="nav nav-tabs nav-justified">
+            <li class="nav-item" ng-class="{'active':stateHasSubstate('audioFileList')}">
+                <a data-toggle="pill" href="" ng-click="goToAudioFleListTab();"><strong>{{ 'MANAGE_AUDIO_FILES_TAB' | translate}}</strong></a>
+            </li>
+            <li class="nav-item" ng-class="{'active':stateHasSubstate('audioRecording')}">
+                <a data-toggle="pill" href="" ng-click="goToRecordingTab();"><strong>{{ 'ADD_TO_SERVER_TAB' | translate}}</strong></a>
+            </li>
+            <li class="nav-item" ng-class="{'active':stateHasSubstate('audioUploader')}">
+                <a data-toggle="pill" href="" ng-click="goToUploaderTab();"><strong>{{ 'UPLOAD_TO_SERVER_TAB' | translate}}</strong></a>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="tab-content">
+            <ui-view></ui-view>
+        </div>
+    </div>
+</div>

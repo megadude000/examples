@@ -1,0 +1,96 @@
+﻿<div class="panel panel-danger" ng-init="initialize()" cg-busy="[fetchAudioFilesPromise, fetchSelectedAudioFilesPromise, deleteFilePromise, checkIfFileExistOnServerPromise, updateAudioFilesPromise]">
+    <div ng-if="pagination.totalItems == 0">
+        <div class="panel-body">
+            <label>{{ 'NO_AUDIOS_LABEL' | translate }}</label>
+        </div>
+    </div>
+    <div ng-if="pagination.totalItems!==0">
+        <div class="panel-footer">
+            <form ng-submit="fetchFilesBySorting()">
+                <input ng-model="fileNameFilter"
+                       type="text"
+                       class="form-control"
+                       placeholder="Enter file name to filter"
+                       ng-change="filterFiles(fileNameFilter)" />
+            </form>
+        </div>
+        <div class="panel-body">
+            <div class="table table-striped table-responsive">
+                <table id="audioFileTable" class="table table-striped">
+                    <tr>
+                        <th width="5%"></th>
+                        <th width="35%" class="text-center">{{ 'FILE_NAME_LABEL' | translate}}</th>
+                        <th width="35%" class="text-center">{{ 'FILE_COMMENT_LABEL' | translate}}</th>
+                        <th width="10%" class="text-center">{{ 'EDIT_LABEL' | translate}}</th>
+                        <th width="15%">
+                            <div class="row pull-right" style="margin-right:1.5em;">
+                                <div style="display:inline-block !important" ng-if="!isCheckedAllFiles">{{ 'CHECK_ALL_LABEL' | translate}}</div>
+                                <div style="display:inline-block !important" ng-if="isCheckedAllFiles">{{ 'UNCHECK_ALL_LABEL' | translate}}</div>
+                                <input type="checkbox" class="checkbox" style="display:inline-block !important" ng-model="isCheckedAllFiles" ng-change="resetCheckForAllFiles()" />
+                            </div>
+                        </th>
+                    </tr>
+                    <tbody>
+                        <tr ng-repeat-start="file in paginatedAudioFiles">
+                            <td>
+                                <a ng-click="downloadAudioFile(file)" ng-show="!file.audioShow">
+                                    <span style="font-size:20px" ng-class="!file.loadingFile ? 'fa fa-chevron-down' : 'fa fa-spinner fa-spin';"></span>
+                                </a>
+                                <a ng-click="closeAudioFile(file)" ng-show="file.audioShow">
+                                    <span style="font-size:20px" class="fa fa-chevron-up"></span>
+                                </a>
+                            </td>
+                            <td class="text-center">{{ file.name }}</td>
+                            <td class="text-center"><div style="width:100%; word-break: break-all;">{{ file.comment }}</div></td>
+                            <td class="text-center">
+                                <button class="btn btn-info btn-sm" ng-click="editAudioFile(file)">
+                                    <span class="glyphicon glyphicon-edit"></span>
+                                </button>
+                            </td>
+                            <td class="pull-right" style="margin-right:1.5em;">
+                                <input style="display:inline-block !important" type="checkbox" ng-model="file.checkedForDelete" class="checkbox" />
+                            </td>
+                        </tr>
+                        <tr ng-repeat-end ng-show="file.audioShow">
+                            <td colspan="5">
+                                <div class="align-middle" style="float: left;">
+                                    <a ng-click="playPauseAudioFile(file)">
+                                        <span style="font-size:30px" ng-class="!file.playing ? 'glyphicon glyphicon-play-circle' : 'glyphicon glyphicon-pause';"></span>
+                                    </a>
+                                </div>
+                                <div class="align-middle" style="float: left; margin: 1px 5px 1px 5px">
+                                    <a ng-click="stopAudioFile(file)">
+                                        <span style="font-size:30px" class="fa fa-stop-circle-o"></span>
+                                    </a>
+                                </div>
+                                <div class="align-middle" style="overflow: auto;">
+                                    <div id="waveAudioPlayer{{file.id}}"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel-footer">
+                <div class="col-lg-8" style="display:inline-block !important">
+                    <ul uib-pagination total-items="pagination.totalItems"
+                        items-per-page="pagination.itemsPerPage"
+                        ng-model="pagination.currentPage"
+                        ng-click="setPage()"
+                        max-size="pagination.maxVisiblePages"
+                        class="pagination-md"
+                        boundary-links="true"
+                        first-text="&laquo;"
+                        last-text="&raquo;"
+                        next-text="&rsaquo;"
+                        previous-text="&lsaquo;"></ul>
+                </div>
+                <div class="col-lg-4 pull-right" style="display:inline-block !important; margin-top:1.5em;">
+                    <button class="btn btn-danger pull-right" ng-click="confirmDelete()" ng-disabled="!isAnyFileChecked()">
+                        <i class="glyphicon glyphicon-trash"></i> {{ 'DELETE_BUTTON_LABEL' | translate }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

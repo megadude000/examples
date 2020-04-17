@@ -1,0 +1,33 @@
+﻿<form name="labelForm" novalidate>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title" style="text-align:center">{{title}}</h3>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        <label class="full-width">{{ 'LABEL_TITLE' | translate }}</label>
+                        <input class="form-control" name="title" ng-model="name" ng-minlength="3" ng-maxlength="30" autofocus required>
+                        <div ng-show="labelForm.$submitted || labelForm.title.$touched">
+                            <span class="text-danger" ng-show="labelForm.title.$error.required">{{'FILL_IN_FIELD' | translate}}</span>
+                            <span class="text-danger" ng-show="labelForm.title.$error.minlength">{{'MIN_LENGTH_FIELD' | translate}}</span>
+                            <span class="text-danger" ng-show="labelForm.title.$error.maxlength">{{'MAX_LENGTH_FIELD' | translate}}</span>
+                            <span class="text-danger" ng-show="labelForm.title.$error.exist">{{'NAME_IS_ALREADY_TAKEN_FIELD' | translate}}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <div class="row">
+                <div class="col-md-1 ">
+                    <button class="btn btn-primary" type="submit" ng-click="save(labelForm)"><span class="glyphicon glyphicon-floppy-save" /></button>
+                </div>
+                <div class="col-md-offset-11">
+                    <button class="btn btn-default" type="button" ng-click="cancel()"><span class="glyphicon glyphicon-ban-circle" /></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

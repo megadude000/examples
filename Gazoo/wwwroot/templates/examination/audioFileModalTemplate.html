@@ -1,0 +1,68 @@
+﻿<style>
+    input.ng-invalid {
+        border: 1px solid red;
+    }
+</style>
+
+<form name="audioFileForm" novalidate>
+    <div class="modal-header">
+        <h3>{{ 'AUDIO_FILE_LABEL' | translate }}</h3>
+    </div>
+    <div class="modal-body">
+        <div class="form-group">
+            <label class="control-label">{{ 'AUDIO_FILE_NAME_LABEL' | translate }}</label>
+            <input type="text"
+                   required
+                   class="form-control"
+                   name="fileNameInput"
+                   ng-minlength="3"
+                   ng-maxlength="50"
+                   ng-pattern="/^[a-zA-Zа-яА-Я0-9\s]+$/"
+                   ng-model-options="{debounce:500}"
+                   ng-model="audioFileData.fileName"
+                   ng-change="checkIfFileExistOnServer(audioFileData.fileName)" />
+            <div style="margin-top:1em">
+                <span class="alert alert-danger" ng-show="audioFileForm.fileNameInput.$error.required">
+                    {{ 'FIELD_REQIURED' | translate }}
+                </span>
+                <span class="alert alert-danger" ng-show="audioFileForm.fileNameInput.$error.minlength">
+                    {{ 'MIN_LENGTH_FIELD' | translate }}
+                </span>
+                <span class="alert alert-danger" ng-show="audioFileForm.fileNameInput.$error.maxlength">
+                    {{ 'MAX_LENGTH_FIELD' | translate }}
+                </span>
+                <span class="alert alert-danger" ng-show="audioFileForm.fileNameInput.$error.pattern">
+                    {{ 'INCORRECT_SYMBOLS' | translate }}
+                </span>
+                <span class="alert alert-danger" ng-show="isFileExistsOnServer">
+                    {{ 'FILE_EXISTS_IN_DB' | translate }}
+                </span>
+            </div>
+        </div>
+            
+            <div class="form-group">
+                <label class="control-label">{{ 'COMMENT_LABEL' | translate }}</label>
+                <input class="form-control"
+                       name="commentInput"
+                       ng-maxlength="128"
+                       ng-model="audioFileData.comment" />
+
+            </div>
+            <span class="alert alert-danger" ng-show="audioFileForm.commentInput.$error.maxlength">
+                {{ 'MAX_LENGTH_FIELD' | translate }}
+            </span>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary"
+                type="submit"
+                ng-click="save(audioFileForm.$valid)"
+                ng-disabled="audioFileName.$invalid || audioFileForm.$invalid || isFileExistsOnServer || blockWhileCheking">
+            {{ 'SAVE_BUTTON_LABEL' | translate }}
+        </button>
+        <button class="btn btn-default"
+                type="button"
+                ng-click="cancel()">
+            {{ 'CANCEL_BUTTON_LABEL' | translate }}
+        </button>
+    </div>
+</form>

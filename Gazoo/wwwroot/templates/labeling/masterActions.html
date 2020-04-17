@@ -1,0 +1,27 @@
+﻿<div class="panel panel-primary">
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-md-2 col-sm-3 col-xs-12">
+                <ul class="nav nav-pills nav-stacked">
+                    <li class="nav-item" ng-class="{'active':stateHasSubstate('audioUploadComponent')}">
+                        <a data-toggle="pill" href="" ng-click="goToAudioUploadTab();">{{ 'UPLOAD_LABEL' | translate }}</a>
+                    </li>
+                    <li class="nav-item" ng-class="{'active':stateHasSubstate('reportGenerator')}">
+                        <a data-toggle="pill" href="" ng-click="goToReportGeneratorTab();">{{ 'GENERATE_REPORT_LABEL' | translate }}</a>
+                    </li>
+                    <li class="nav-item" ng-class="{'active':stateHasSubstate('labelsCreationTool')}">
+                        <a data-toggle="pill" href="" ng-click="goToLabelsCreationToolTab();">{{ 'LABELS_CREATION_TOOL_LABEL' | translate }}</a>
+                    </li>
+                    <li class="nav-item" ng-class="{'active':stateHasSubstate('importStatistics')}">
+                        <a data-toggle="pill" href="" ng-click="goToImportStatisticsTab();">{{ 'IMPORT_STATISCTICS_LABEL' | translate }}</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-10 col-sm-9 col-xs-12">
+                <div class="tab-content">
+                     <ui-view></ui-view>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

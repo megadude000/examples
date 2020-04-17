@@ -1,0 +1,57 @@
+﻿<div class="panel panel-danger answer-set" ng-init="initialize()" cg-busy="[getPredefinedAnswerSetsPromise, answerSetPromise]">
+    <div class="panel-body">
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <button type="button" class="btn btn-success btn-s" style="width:100%" ng-click="addAnswerSet()">
+                            <span class="glyphicon glyphicon-plus"></span> {{ 'ADD_LABEL' | translate }}
+                        </button>
+                    </div>
+                    <div class="panel-body">
+                        <ul class="nav nav-pills nav-stacked conversation-transcription" ng-repeat="set in answerSets" ng-if="answerSets.length">
+                            <li ng-class="selectedAnswerSet == set.id ? 'active' : ''" style="margin-top:0.3em" id="#{{set.id}}">
+                                <a data-toggle="pill" class="pill-main" ng-click="setAnswers(set.id)">{{ getTranslationIfNeed(set.name) }}</a>
+                                <a class="pill-edit text-center" ng-click="editAnswerSet(set)"><span class="glyphicon glyphicon-edit"></span>&nbsp;</a>
+                                <a class="pill-delete text-center" ng-click="confirmDeleteAnswerSet(set.id)"><span class="glyphicon glyphicon-trash"></span>&nbsp;</a>
+                            </li>
+                        </ul>
+                        <div class="row equal-cols" ng-if="!answerSets.length">
+                            <div class="col-sm-12">
+                                <div class="alert alert-danger" role="alert">
+                                    <div class="row vertical-align">
+                                        <div class="col-xs-2 text-center">
+                                            <i class="fa fa-exclamation-triangle fa-2x"></i>
+                                        </div>
+                                        <div class="col-xs-10 text-center">
+                                            {{ 'NO_PREDEFINED_ANSWER_SETS_INFO_LABEL' | translate }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-9" ng-repeat="set in answerSets" ng-if="answerSets.length">
+                <div ng-if="selectedAnswerSet == set.id" id="#{{set.id}}" class="tab-content">
+                    <div class="tab-pane active" role="tabpanel">
+                        <div class="panel panel-info">
+                            <div class="panel-body row">
+                                <div class="col-lg-4 col-md-3 col-sm-12 col-xs-12">
+                                    <answer-control type="answerType.Script" set-id="set.id"></answer-control>
+                                </div>
+                                <div class="col-lg-4 col-md-3 col-sm-12 col-xs-12">
+                                    <answer-control type="answerType.Objection" set-id="set.id"></answer-control>
+                                </div>
+                                <div class="col-lg-4 col-md-3 col-sm-12 col-xs-12">
+                                    <answer-control type="answerType.QuickAnswer" set-id="set.id"></answer-control>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

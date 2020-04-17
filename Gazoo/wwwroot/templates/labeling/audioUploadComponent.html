@@ -1,0 +1,17 @@
+﻿<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <ul class="nav nav-tabs nav-justified">
+            <li class="nav-item" ng-class="{'active':stateHasSubstate('transcriptionUpload')}">
+                <a data-toggle="pill" href="" ng-click="goToTranscriptionUploadTab();"><strong>{{ 'TRANSCRIPTION_UPLOAD_TAB' | translate}}</strong></a>
+            </li>
+            <li class="nav-item" ng-class="{'active':stateHasSubstate('fcMomentUpload')}">
+                <a data-toggle="pill" href="" ng-click="goToFCMomentUploadTab();"><strong>{{ 'FC_MOMENTS_UPLOAD_TAB' | translate}}</strong></a>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="tab-content">
+            <ui-view></ui-view>
+        </div>
+    </div>
+</div>

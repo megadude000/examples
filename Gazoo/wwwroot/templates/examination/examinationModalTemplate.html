@@ -1,0 +1,60 @@
+﻿<form name="examinationForm" novalidate>
+    <div class="panel panel-info">
+        <div class="panel-heading">
+            <h3 class="panel-title text-center">{{title}}</h3>
+        </div>
+        <div class="panel-body">
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-4">
+                        <label class="control-label text-center" style="width:100%">{{ 'EXAMINATION_TITLE' | translate }}</label>
+                        &nbsp;
+                        <input class="form-control" 
+                               name="title" 
+                               ng-model="examination.name" 
+                               ng-change="nameChanged()"
+                               ng-minlength="3" 
+                               ng-maxlength="30" 
+                               required>
+                    </div>
+                    <div class="col-sm-4">
+                        <label class="control-label text-center full-width">{{'ENTER_EXAMINATION_REACTION_TIME_LABEL' | translate}}</label>
+                        <input type="number" 
+                               name="maxReactionTime" 
+                               class="form-control input-sm" 
+                               min="0" 
+                               max="120" 
+                               ng-model="examination.reactionTime">
+                    </div>
+                    <div class="col-sm-4">
+                        <label class="control-label text-center full-width">{{'ANSWER_SET_FOR_EXAMINATION_CONFIGURATION' | translate}}</label>
+                        <select class="form-control"
+                                ng-model="examination.predefinedAnswerSetId"
+                                ng-init="examination.predefinedAnswerSetId = answerSets[0].id"
+                                ng-options="set.id as set.name for set in answerSets">
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <div class="row">
+                <div class="col-md-1 ">
+                    <button class="btn btn-primary"
+                            type="submit"
+                            ng-click="save(examinationForm)"
+                            ng-disabled="examinationForm.$invalid || examinationForm.$pristine">
+                        <span class="glyphicon glyphicon-floppy-save" />
+                    </button>
+                </div>
+                <div class="col-md-offset-11">
+                    <button class="btn btn-default"
+                            type="button"
+                            ng-click="cancel()">
+                        <span class="glyphicon glyphicon-ban-circle" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

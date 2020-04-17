@@ -1,0 +1,259 @@
+﻿<div class="panel panel-danger examination-report" ng-init="initialize()" cg-busy="[getLatestReports, fetchAgentsPromise, fetchExaminationsPromise, getReportsPromise, fetchInstancesPromise]">
+    <div class="panel-heading">
+        <h3 class="panel-title" style="text-align:center">
+            {{ 'REPORTS_COMPONENT_TAB' | translate }}
+        </h3>
+    </div>
+    <div class="panel-body">
+        <div class="panel panel-default text-center">
+            <div class="panel-body">
+                <div class="col-lg-12 col-md-12 ph-0">
+                    <div ng-if="availableInstancesToUser.length < 2">
+                        <div class="col-md-4 col-sm-6" id="agent_selector">
+                            <label>{{ 'AGENTS_LABEL' | translate }}:</label>
+                            <ui-select multiple
+                                       ng-model="examinationReportsFilter.selectedAgents"
+                                       theme="bootstrap"
+                                       close-on-select="false"
+                                       class="full-width">
+                                <ui-select-match placeholder="{{ 'SELECT_AGENTS_PLACEHOLDER' | translate }}">
+                                    <small ng-bind-html="$item.name"></small>
+                                    <div ng-if="currentExaminationSource.source == ExaminationSource.Pebbles" style="display:inline">
+                                        <small> {{'FROM' | translate }} </small>
+                                        <small ng-bind-html="$item.instanceName"></small>
+                                    </div>
+                                </ui-select-match>
+                                <ui-select-choices refresh-delay="500" repeat="agent in agents" refresh="fetchAgents($select.search)">
+                                    <small ng-bind-html="agent.name"></small>
+                                    <div ng-if="currentExaminationSource.source == ExaminationSource.Pebbles" style="display:inline">
+                                        <small> {{'FROM' | translate }} </small>
+                                        <small ng-bind-html="agent.instanceName"></small>
+                                    </div>
+                                </ui-select-choices>
+                            </ui-select>
+                        </div>
+                        <div class="col-md-4 col-sm-6">
+                            <label class="">{{ 'EXAMINATIONS_LABEL' | translate }}:</label>
+                            <div class="full-width" ng-dropdown-multiselect=""
+                                 options="examinations"
+                                 selected-model="examinationReportsFilter.selectedExaminations"
+                                 extra-settings="selectSettings">
+                            </div>
+                        </div>
+                    </div>
+                    <div ng-if="availableInstancesToUser.length > 1">
+                        <div class="col-md-3 col-sm-6" id="agent_selector">
+                            <label>{{ 'AGENTS_LABEL' | translate }}:</label>
+                            <ui-select multiple
+                                       ng-model="examinationReportsFilter.selectedAgents"
+                                       theme="bootstrap"
+                                       close-on-select="false"
+                                       class="full-width">
+                                <ui-select-match placeholder="{{ 'SELECT_AGENTS_PLACEHOLDER' | translate }}">
+                                    <small ng-bind-html="$item.name"></small>
+                                    <div ng-if="currentExaminationSource.source == ExaminationSource.Pebbles" style="display:inline">
+                                        <small> {{'FROM' | translate }} </small>
+                                        <small ng-bind-html="$item.instanceName"></small>
+                                    </div>
+                                </ui-select-match>
+                                <ui-select-choices refresh-delay="500" repeat="agent in agents" refresh="fetchAgents($select.search)">
+                                    <small ng-bind-html="agent.name"></small>
+                                    <div ng-if="currentExaminationSource.source == ExaminationSource.Pebbles" style="display:inline">
+                                        <small> {{'FROM' | translate }} </small>
+                                        <small ng-bind-html="agent.instanceName"></small>
+                                    </div>
+                                </ui-select-choices>
+                            </ui-select>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <label class="">{{ 'EXAMINATIONS_LABEL' | translate }}:</label>
+                            <div class="full-width" ng-dropdown-multiselect=""
+                                 options="examinations"
+                                 selected-model="examinationReportsFilter.selectedExaminations"
+                                 extra-settings="selectSettings">
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <label class="">{{ 'INSTANCES_LABEL' | translate }}:</label>
+                            <div class="full-width" ng-dropdown-multiselect=""
+                                 options="availableInstancesToUser"
+                                 selected-model="examinationReportsFilter.selectedInstances"
+                                 extra-settings="selectSettings">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-2 col-sm-6">
+                        <label class="">{{ 'FROM_DATE_LABEL' | translate }}:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control full-width"
+                                   uib-datepicker-popup="dd-MM-yyyy"
+                                   is-open="startDatePopup.opened"
+                                   readonly
+                                   ng-model="examinationReportsFilter.startTime"
+                                   datepicker-options="startDateOptions" ng-change="changeMinEndTime()" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default calendar-button" ng-click="openStartDatePopup()"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-2 col-sm-6">
+                        <label class="">{{ 'TO_DATE_LABEL' | translate }}:</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control full-width"
+                                   uib-datepicker-popup="dd-MM-yyyy"
+                                   is-open="endDatePopup.opened"
+                                   readonly
+                                   ng-model="examinationReportsFilter.endTime"
+                                   datepicker-options="endDateOptions" ng-change="changeMaxStartTime()" />
+                            <span class="input-group-btn">
+                                <button type="button" class="btn btn-default calendar-button" ng-click="openEndDatePopup()"><i class="glyphicon glyphicon-calendar"></i></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-12 col-md-12 ph-0" style="padding-top:25px;">
+                    <div class="form-group col-md-3 col-sm-6">
+                        <div class="big ui buttons">
+                            <button class="ui button" ng-click="changeExaminationSource(ExaminationSource.Barney)" ng-class="currentExaminationSource.source === ExaminationSource.Barney ? 'active' : ''">Barney</button>
+                            <div class="or"></div>
+                            <button class="ui button" ng-click="changeExaminationSource(ExaminationSource.Pebbles)" ng-class="currentExaminationSource.source === ExaminationSource.Pebbles ? 'active' : ''">Pebbles</button>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-3 col-sm-6">
+                        <button type="reset" class="btn btn-default full-width" ng-click="reload()">
+                            <span class="glyphicon glyphicon-refresh"></span>{{ 'RELOAD_LABEL' | translate }}
+                        </button>
+                    </div>
+                    <div class="form-group col-md-3 col-sm-6">
+                        <button type="reset" class="btn btn-default full-width" ng-click="reset()">
+                            <span class="glyphicon glyphicon-record"></span>{{ 'RESET_LABEL' | translate }}
+                        </button>
+                    </div>
+                    <div ng-if="availableInstancesToUser.length < 2">
+                        <div class="form-group col-md-3 col-sm-6">
+                            <button type="submit"
+                                    class="btn btn-success full-width"
+                                    ng-click="getReports()"
+                                    ng-disabled="(examinationReportsFilter.endTime == null ||
+                                                      examinationReportsFilter.startTime == null ||
+                                                      !examinationReportsFilter.selectedExaminations.length)">
+                                <span class="glyphicon glyphicon-filter"></span> {{ 'FILTER_LABEL' | translate }}
+                            </button>
+                        </div>
+                    </div>
+                    <div ng-if="availableInstancesToUser.length > 1">
+                        <div class="form-group col-md-3 col-sm-6">
+                            <button type="submit"
+                                    class="btn btn-success full-width"
+                                    ng-click="getExaminations()"
+                                    ng-disabled="(examinationReportsFilter.endTime == null ||
+                                                      examinationReportsFilter.startTime == null ||
+                                                      !examinationReportsFilter.selectedExaminations.length ||
+                                                      !examinationReportsFilter.selectedInstances.length)">
+                                <span class="glyphicon glyphicon-filter"></span> {{ 'FILTER_LABEL' | translate }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ph-15" ng-if="pagination.totalItems!==0">
+                <div class="text-center">
+                    <ul uib-pagination total-items="pagination.totalItems"
+                        items-per-page="pagination.itemsPerPage"
+                        ng-model="pagination.currentPage"
+                        ng-click="setPage()"
+                        max-size="pagination.maxVisiblePages"
+                        class="pagination-md"
+                        boundary-links="true"
+                        first-text="&laquo;"
+                        last-text="&raquo;"
+                        next-text="&rsaquo;"
+                        previous-text="&lsaquo;"></ul>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr class="filters">
+                            <th class="text-center cursor-pointer"
+                                ng-click="sortBy('examinationName')">
+                                {{ 'EXAMINATION_NAME' | translate }}
+                                <span class="sortorder" ng-show="propertyName === 'examinationName'" ng-class="{reverse: reverse}"></span>
+                            </th>
+                            <th class="text-center cursor-pointer"
+                                ng-click="sortBy('agentName')">
+                                {{ 'AGENT_NAME' | translate }}
+                                <span class="sortorder" ng-show="propertyName === 'agentName'" ng-class="{reverse: reverse}"></span>
+                            </th>
+                            <th class="text-center cursor-pointer"
+                                ng-click="sortBy('examinationStartDate')">
+                                {{ 'EXAMINATION_START_DATE' | translate }}
+                                <span class="sortorder" ng-show="propertyName === 'examinationStartDate'" ng-class="{reverse: reverse}"></span>
+                            </th>
+                            <th class="text-center cursor-pointer"
+                                ng-click="sortBy('examinationEndDate')">
+                                {{ 'EXAMINATION_END_DATE' | translate }}
+                                <span class="sortorder" ng-show="propertyName === 'examinationEndDate'" ng-class="{reverse: reverse}"></span>
+                            </th>
+                            <th class="text-center cursor-pointer"
+                                ng-click="sortBy('averageReactionTime')">
+                                {{ 'AVERAGE_REACTION_TIME' | translate }}
+                                <span class="sortorder" ng-show="propertyName === 'averageReactionTime'" ng-class="{reverse: reverse}"></span>
+                            </th>
+                            <th class="text-center cursor-pointer"
+                                ng-click="sortBy('examinationAccuracy')">
+                                {{ 'EXAMINATION_ACCURACY' | translate }}
+                                <span class="sortorder" ng-show="propertyName === 'examinationAccuracy'" ng-class="{reverse: reverse}"></span>
+                            </th>
+                            <th class="text-center cursor-pointer"
+                                ng-click="sortBy('instanceName')">
+                                {{ 'INSTANCE_NAME_LABEL' | translate }}
+                                <span class="sortorder" ng-show="propertyName === 'instanceName'" ng-class="{reverse: reverse}"></span>
+                            </th>
+                            <th width="10%">
+                                {{ 'MORE_EXAMINATION_INFO' | translate }}
+                            </th>
+                        </tr>
+                        <tr class="filters"></tr>
+                    </thead>
+                    <tbody ng-repeat="examinationReport in paginatedExaminationReports">
+                        <tr>
+                            <td class="text-center">{{ examinationReport.examinationName }}</td>
+                            <td class="text-center">{{ examinationReport.agentName }}</td>
+                            <td class="text-center">{{ examinationReport.examinationStartDate | date :  "dd.MM.yyyy HH:mm:ss" }}</td>
+                            <td class="text-center">{{ examinationReport.examinationEndDate | date :  "dd.MM.yyyy HH:mm:ss" }}</td>
+                            <td class="text-center">{{ examinationReport.averageReactionTime }}</td>
+                            <td class="text-center">{{ examinationReport.examinationAccuracy }}%</td>
+                            <td class="text-center">{{ examinationReport.instanceName }}</td>
+                            <td>
+                                <button class="btn btn-info" ng-click="goToReportInfoTab(examinationReport.id); $event.stopPropagation();">
+                                    <span class="glyphicon glyphicon-info-sign" />
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="col-md-12 ph-0">
+                    <button type="button" class="btn btn-success full-width"
+                            ng-csv="examinationReportsToFile"
+                            csv-header="getCSVHeaders();"
+                            field-separator=","
+                            filename="{{csvFileName}}.csv">
+                        {{ 'SAVE_REPORTS_LABEL' | translate }}
+                    </button>
+                </div>
+                <div class="text-center">
+                    <ul uib-pagination total-items="pagination.totalItems"
+                        items-per-page="pagination.itemsPerPage"
+                        ng-model="pagination.currentPage"
+                        ng-click="setPage()"
+                        max-size="pagination.maxVisiblePages"
+                        class="pagination-md"
+                        boundary-links="true"
+                        first-text="&laquo;"
+                        last-text="&raquo;"
+                        next-text="&rsaquo;"
+                        previous-text="&lsaquo;"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
