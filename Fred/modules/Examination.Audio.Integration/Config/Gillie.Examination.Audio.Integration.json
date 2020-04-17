@@ -1,0 +1,25 @@
+{
+  "Instance": {
+    "Name": "",
+    "IsSyncEnabled": "false"
+  },
+  "CentralGazooAddress": {
+    "Host": "",
+    "Port": "8089"
+  },
+  "DependentServices": {
+    "ExaminationIntegration": {
+      "Ip": "localhost",
+      "Port": 23460
+    }
+  },
+  "HostedServices": {
+    "AudioUpdates": {
+      "Ip": "0.0.0.0",
+      "Port": 23461
+    }
+  },
+  "ExaminationAudioSynchronizationConfiguration": {
+    "AudioFilesWorkingDirectory": "/files/AgentAssistant/Audio/Prod/Exam"
+  }
+}

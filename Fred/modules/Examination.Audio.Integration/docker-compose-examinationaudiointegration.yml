@@ -1,0 +1,19 @@
+﻿version: '2'
+services:
+  Company.fred:
+    image: Company.fred.examinationaudiointegration
+    container_name: Company.fred.examinationaudiointegration
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Company_FRED_OS=Linux
+    volumes:
+      - /var/log/Company.Fred:/var/log/Company.Fred
+      - /home/ftp_user/files/AgentAssistant/Audio/Prod/Exam:/files/AgentAssistant/Audio/Prod/Exam
+    ports:
+      - "8086:8086"
+      - "23461:23461"
+    restart: always
+    network_mode: "host"
